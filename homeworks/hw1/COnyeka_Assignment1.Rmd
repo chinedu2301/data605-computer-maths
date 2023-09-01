@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-**Question: **  
+**Questions: **  
 One of the most useful applications for linear algebra in data science is image manipulation.  We often need to compress, expand, warp, skew, etc. images.  To do so, we left multiply a transformation matrix by each of the point vectors.  
 For this assignment, build the first letters for both your first and last name using point plots in R.  For example, the following code builds an H.
 x=c(rep(0,500),seq(0,1,length.out=1000), rep(1,500))
