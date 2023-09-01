@@ -1,7 +1,7 @@
 ---
-title: "chinedu_data605_hw1"
+title: "DATA 605 Homework1"
 author: "Chinedu Onyeka"
-date: "2023-08-29"
+date: "2023-08-31"
 output: html_document
 ---
 
@@ -27,6 +27,7 @@ Upload your document as a .RMD file.  I will know if your assignment is correct 
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(animation)
+library(gifski)
 ```
 
 
@@ -53,7 +54,7 @@ X_co = c(seq(-2,-1,length.out=500),rep(-2,1000), seq(-2,-1,length.out=500),
 Y_co = c(rep(-1,500),seq(-1,1,length.out=1000), rep(1,500),
       rep(-1,500),seq(-1,1,length.out=1000), rep(1,500), seq(-1,1,length.out=1000)
      )
-
+Z = rbind(X_co, Y_co)
 # plot the letters C and O
 plot(Y_co ~ X_co, xlim = c(-3,3), ylim = c(-3,3), main = "Point plot of letters C and O", ylab = "Y", xlab = "X")
 ```
@@ -74,6 +75,64 @@ left_multiply  <- function(x,y){
 identity_matrix = diag(6)
 left_multiply(matrix(rep(seq(1,6, length.out= 6), 6), nrow = 6, ncol = 6), identity_matrix)
 ```
+### Transformations
+
+**Shear Transformation**
+```{r shear-transformation, animation.hook='gifski', interval=0.05}
+anim = ani.record(reset = TRUE, replay.cur = FALSE)
+# Create display window for animation
+x11()
+# Shear transformation
+for (i in seq(0,1,length.out = 20)) {
+  z_shear <- apply(Z,2,function(x) left_multiply(x,matrix(c(1,i,0,1),nrow=2,ncol=2)))
+  plot(z_shear[2,] ~ z_shear[1,], xlim = c(-3,3), ylim = c(-3,3), 
+       main = "Shear Transformation", ylab = "Y", xlab = "X")
+}
+```
+
+
+**Scaling Transformation**
+```{r scaling-transformation, animation.hook='gifski', interval=0.05}
+anim = ani.record(reset = TRUE, replay.cur = FALSE)
+# Create display window for animation
+x11()
+# Scale Transformation
+for (i in seq(1,4,length.out = 20)) {
+  z_scale <- apply(Z, 2, function(x) left_multiply(x, matrix(c(i,0,0,i), nrow=2, ncol=2)))
+  plot(z_scale[2,] ~ z_scale[1,], xlim = c(-3,3), ylim = c(-3,3), 
+       main = "Scaling Transformation", ylab = "Y", xlab = "X")
+}
+```
+
+
+**Rotation Transformation**
+```{r rotation-transformation, animation.hook='gifski', interval=0.05}
+anim = ani.record(reset = TRUE, replay.cur = FALSE)
+# Create display window for animation
+x11()
+# Rotation Transformation
+for (i in seq(0, pi*2, length.out=20)) {
+  z_rotation <- apply(Z, 2, function(x) left_multiply(x, matrix(c(cos(i), -sin(i), sin(i), cos(i)), nrow=2, ncol=2)))
+  plot(z_rotation[2,] ~ z_rotation[1,], xlim = c(-3,3), ylim = c(-3,3), 
+       main = "Rotation Transformation", ylab = "Y", xlab = "X")
+}
+```
+
+**Projection Transformation**
+```{r projection-transformation, animation.hook='gifski', interval=0.05}
+anim = ani.record(reset = TRUE, replay.cur = FALSE)
+# Create display window for animation
+x11()
+# Projection Transformation
+for (i in seq(0, 2*pi, length.out=20)) {
+  z_proj <- rbind(Z, rep(0, ncol(Z)))
+  z_projection <-apply(z_proj, 2, function(x) left_multiply(x, matrix(c(1, 0, 0, 0, cos(i), -sin(i), 0, sin(i), cos(i)), nrow=3, ncol=3)))
+  plot(z_projection[2,] ~ z_projection[1,], xlim = c(-3,3), ylim = c(-3,3), 
+       main = "Projection Transformation", ylab = "Y", xlab = "X")
+}
+```
+
+
 
 
 
