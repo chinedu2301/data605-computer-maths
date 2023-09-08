@@ -1,0 +1,306 @@
+---
+title: "DATA 605 Homework2"
+author: "Chinedu Onyeka"
+date: "2023-09-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Questions: ** 
+<center>
+<h3> 1: Problem Set 1 </h3>
+</center>
+### 1.1
+Show that $A^{T}A \neq AA^{T}$ in general. (Proof and demonstration).  
+</b>  
+**Solution**  
+
+For the expression $A^{T}A = AA^{T}$ to be true in general it must be true for all A where A is a matrix. So, if we can get at least one A that does not satisfy the expression, then the expression is not true in general for all A.
+</b>
+Suppose a matrix $A$ is an $m \times n$ matrix, its transpose $A^{T}$ will be an $n \times m$ matrix
+
+Let $A$ be a $2 \times 2$ square matrix:
+$$
+A = 
+\begin{bmatrix}
+    u & v \\
+    x & y \\
+\end{bmatrix}
+$$
+The transpose of A will be
+$$
+A^T = 
+\begin{bmatrix}
+    u & x \\
+    v & y \\
+\end{bmatrix}
+$$
+
+The multiplication of $A^T$ by $A$, $A^TA$ is given by
+$$
+A^TA = 
+\begin{bmatrix}
+    u^2+x^2 & uv+xy \\
+    uv+xy & v^2+y^2 \\
+\end{bmatrix}
+$$
+The multiplication of $A$ by $A^T$, $AA^T$ is given by
+
+$$
+AA^T = 
+\begin{bmatrix}
+    u^2+v^2 & ux+vy \\
+    ux+vy & x^2+y^2 \\
+\end{bmatrix}
+$$
+We can see that unless x = v, the two would not be equal.  
+Therefore,
+
+$$
+\begin{bmatrix}
+    u^2+x^2 & uv+xy \\
+    uv+xy & v^2+y^2 \\
+\end{bmatrix}
+\neq
+\begin{bmatrix}
+    u^2+v^2 & ux+vy \\
+    ux+vy & x^2+y^2 \\
+\end{bmatrix}
+$$
+Therefore, $A^{T}A \neq AA^{T}$ in general.  
+
+**Demonstration with 2 x 2 numeric valued matrices**
+
+```{r}
+# Let A be a 2 x 2 matrix
+A = matrix(c(2,4,6,8), 2, 2)
+A_T = t(A) # A transpose
+A_TA = A_T  %*% A # A transpose multiplied by A
+AA_T = A %*% A_T # A multiplied by A transpose
+```
+
+```{r}
+A_TA
+```
+
+```{r}
+AA_T
+```
+
+```{r}
+# check if the two matrices are equal
+AA_T == A_TA
+```
+```{r}
+# check if the two matrices are equal
+identical(A_TA, AA_T)
+```
+**Demonstration with 3 x 3 numeric valued matrices**
+```{r}
+A = matrix(c(1,2,3,4,5,6,7,8,9), 3, 3)
+A_T = t(A)
+A_TA = A_T  %*% A
+AA_T = A %*% A_T
+```
+```{r}
+A_TA
+```
+```{r}
+AA_T
+```
+```{r}
+# check if the two matrices are equal
+AA_T == A_TA
+```
+```{r}
+# check if the two matrices are identical
+identical(A_TA, AA_T)
+```
+
+### 1.2
+For a special type of square matrix A, we get $A^{T}A = AA^{T}$.  Under what conditions could this be true? (Hint: The Identity matrix I is an example of such a matrix).  
+</b>  
+**Solution**  
+
+The condition for which we get the above is for a symmetric matrix.  
+```{r}
+# Let A be a symmetric matrix
+A = matrix(c(3,-2,4,-2,6,2,4,2,3), 3, 3)
+A
+```
+```{r}
+# check if the matrix is symmetric
+isSymmetric.matrix(A)
+```
+
+```{r}
+A_T = t(A)
+A_TA = A_T  %*% A
+AA_T = A %*% A_T
+```
+
+```{r}
+A_TA
+```
+
+```{r}
+AA_T
+```
+
+
+```{r}
+# check if the two matrices are equal
+AA_T == A_TA
+```
+```{r}
+# check if the two matrices are identical
+identical(A_TA, AA_T)
+```
+<center>
+<h3> 2: Problem Set 2 </h3>
+</center>
+Write an R function to factorize a square matrix A into LU or LDU.
+</b>  
+**Solution**  
+```{r}
+LU_factorizer <- function(X) {
+  m <- dim(X)[1]
+  n <- dim(X)[2]
+  L <- diag(m)
+  U <- X
+  
+  # Check to ensure that M is a square matrix
+  if (m != n) {
+    return(cat("This is a not a square matrix. \nThis function works for only square matrices"))
+  }
+
+  if (m > 3 | n > 3){
+    return("Please enter a square matrix of lower dimension")
+  }
+  
+  # If dimension is 1, then U=A and L=[1]
+  if (n==1 && m==1) {
+    return(list(L,U))
+  }
+  
+  # Check if zero is in diagonal of the provided matrix
+  if (0 %in% diag(X)){
+    return("This fuction does not work if zero is in the diagonal of the matrix")
+    
+  }
+  
+  # Loop through the lower triangle to determine the multiplier for each position:
+  for(i in 2:m) {
+    for(j in 1:(i-1)) {
+      multiplier <- -U[i,j] / U[j,j]
+      U[i, ] <- multiplier * U[j, ] + U[i, ]
+      L[i,j] <- -multiplier
+    }
+  }
+  
+  return(list(L,U))
+}
+```
+
+
+**Demonstration with a non-squared matrix**
+```{r}
+# Test for a non-square matrix
+A_nonsquare = matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3)
+LU_factorizer(A_nonsquare)
+```
+
+**Demonstration with 3 x 3 numeric valued matrices**
+```{r}
+# Let's declare a random 5 x 5 matrix, Y
+Y = matrix(1:9,ncol=3)
+Y
+```
+Apply the LU_factorizer function on Y
+```{r}
+LU = LU_factorizer(Y)
+L = LU[[1]]
+U = LU[[2]]
+```
+
+Display the L and U decomposition
+```{r}
+# display L
+L
+```
+
+```{r}
+U
+```
+```{r}
+LU_result = L %*% U
+LU_result
+```
+```{r}
+# check if Y = LU
+Y == LU_result
+```
+
+**Demonstration with a random 3x3 matrix**
+```{r}
+set.seed(94)
+X <- matrix(sample(c(1:10), size = 9),nrow = 3)
+X
+```
+Apply the LU_factorizer function on Y
+```{r}
+LU = LU_factorizer(X)
+L = LU[[1]]
+U = LU[[2]]
+```
+
+Display the L and U decomposition
+```{r}
+# display L
+L
+```
+
+```{r}
+U
+```
+
+```{r}
+LU_result = L %*% U
+LU_result
+```
+```{r}
+# check if X = LU
+X == LU_result
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
