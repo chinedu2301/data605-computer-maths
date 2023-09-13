@@ -1,0 +1,314 @@
+---
+title: "DATA 605 Homework3"
+author: "Chinedu Onyeka"
+date: "2023-09-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### **Questions: ** 
+<center>
+<h3> 1: Problem Set 1 </h3>
+</center>
+#### 1.1 What is the rank of the matrix A?
+
+$$
+A = \begin{bmatrix}
+1 & 2 & 3 & 4 \\
+-2 & 0 & 1 & 3 \\
+0 & 1 & -2 & 1 \\
+5 & 4 & -2 & -3 \\
+\end{bmatrix}
+$$  
+</b>  
+**Solution**  
+
+```{r}
+A <- matrix(c(1,-2,0,5,2,0,1,4,3,1,-2,-2,4,3,1,-3), ncol=4)
+A
+```
+```{r}
+# rank of the matrix, A
+rankA <- qr(A)$rank
+rankA
+```
+Therefore the rank of the matrix is 4.  
+
+#### 1.2 Given an $m \times n$ matrix where $m>n$, what can be the maximum rank?
+The minimum rank, assuming that the matrix is non-zero?  
+</br>
+**Solution**  
+For a non-zero matrix, the minimum and maximum rank is given by:  
+
+Minimum rank =  1  
+Maximum rank = n  
+
+#### 1.3 What is the rank of matrix $B$?
+
+$$
+B = 
+\begin{bmatrix}
+    1 & 2 & 1 \\
+    3 & 6 & 3 \\
+    2 & 4 & 2 \\
+\end{bmatrix}
+$$ 
+  
+</br>
+**Solution**
+Looking at the matrix, the rank is 1 given than there is only one linearly independent row for the matrix, B. The rank of a matrix is simply the number of linearly independent rows of the matrix. Given that matrix B has rows 2 and 3 as multiples of row 1, it means that there is only one linearly independent row for the matrix and thus the rank is 1.
+
+```{r}
+# checking the matrix using R code:
+B <- matrix(c(1,3,2,2,6,4,1,3,2), nrow = 3)
+B
+```
+```{r}
+# rank of matrix B
+rankB <- qr(B)$rank
+rankB
+```
+
+<center>
+<h3> 2: Problem Set 2 </h3>
+</center>
+
+Compute the eigenvalues and eigenvectors of the matrix $A$. You'll need to show your work. You'll need to write out the characteristic
+polynomial and show your solution.
+
+$$
+A = 
+\begin{bmatrix}
+    1 & 2 & 3 \\
+    0 & 4 & 5 \\
+    0 & 0 & 6 \\
+\end{bmatrix}
+$$
+
+</br>
+
+**Solution**  
+The eigenvalue(s) is $\lambda$ is defined as $Ax = \lambda x$ where $x$ is the eigen vector associated with the eigenvalue $\lambda$.  
+$|A-\lambda I| = 0$ where $I$ is a $3 \times 3$ identity square matrix.
+
+Therefore:
+$$
+\begin{bmatrix}
+    1 & 2 & 3 \\
+    0 & 4 & 5 \\
+    0 & 0 & 6 \\
+\end{bmatrix}
+- \lambda
+\begin{bmatrix}
+    1 & 0 & 0 \\
+    0 & 1 & 0 \\
+    0 & 0 & 1 \\
+\end{bmatrix} = 
+\begin{bmatrix}
+    1-\lambda & 2 & 3 \\
+    0 & 4-\lambda & 5 \\
+    0 & 0 & 6-\lambda \\
+\end{bmatrix}
+$$
+
+Find the determinant of the resulting matrix and set it equal to zero to find the values of $\lambda$  
+
+$$
+det
+\begin{bmatrix}
+    1-\lambda & 2 & 3 \\
+    0 & 4-\lambda & 5 \\
+    0 & 0 & 6-\lambda \\
+\end{bmatrix} = 0
+$$  
+
+Multiplying along the first column to take advantage of the zeros in the first columns:  
+$(1-\lambda)[(4-\lambda)(6-\lambda) - 0] = 0$  
+$=> (1-\lambda)(4-\lambda)(6-\lambda) = 0$ This is the characteristic polynomial and it's better to keep it unexpanded since it makes it a lot easier to see the values of $\lambda$.  
+
+Therefore $\lambda = 1, 4, 6$.  
+Thus, the eigenvalues are $1, 4,$ and $6$.  
+
+```{r}
+# verify using R
+A <- matrix(c(1, 0, 0, 2, 4, 0, 3, 5, 6), nrow=3, ncol=3)
+eigen_values <- eigen(A)
+eigen_values$values
+```  
+
+
+
+#### **Eigen-vectors**.  
+</br>
+**Eigen-vector for $\lambda = 1$**;  
+$(A - \lambda I)x = 0$; $x$ is the eigen-vector   
+
+For $\lambda = 1$;  
+$$
+\begin{bmatrix}
+    1-1 & 2 & 3 \\
+    0 & 4-1 & 5 \\
+    0 & 0 & 6-1 \\
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+    u \\
+    v \\
+    w \\
+\end{bmatrix}  = 0
+$$
+
+$$
+\begin{bmatrix}
+    0 & 2 & 3 \\
+    0 & 3 & 5 \\
+    0 & 0 & 5 \\
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+    u \\
+    v \\
+    w \\
+\end{bmatrix}  = 0; 
+$$
+ $5w = 0; w = 0$; $3v + 5w = 0; 3v + 5(0) = 0; v = 0$; $0u + 2v + 3w = 0; 0 + 0 + 0 = 0; 0=0$  
+ This gives a trivial solution for x;  
+ 
+Thus the eigen-vector associated with $\lambda = 1$ is given by:    
+$$ 
+ x = u
+\begin{bmatrix}
+    1 \\
+    0 \\
+    0 \\
+\end{bmatrix} 
+$$
+
+$\forall$ $u$ $\epsilon$ $\mathbb{C}$  
+</br>
+**Eigen-vector For $\lambda = 4$**  
+$$
+\begin{bmatrix}
+    1-4 & 2 & 3 \\
+    0 & 4-4 & 5 \\
+    0 & 0 & 6-4 \\
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+    u \\
+    v \\
+    w \\
+\end{bmatrix}  = 0
+$$
+$$
+\begin{bmatrix}
+    -3 & 2 & 3 \\
+    0 & 0 & 5 \\
+    0 & 0 & 2 \\
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+    u \\
+    v \\
+    w \\
+\end{bmatrix}  = 0; 
+$$  
+
+$2w = 0; w=0$; $0v + 2w = 0; 0v + 0 + 0 = 0; 0 = 0$ => $v$ appears to result in a trivial solution.  
+$-3u + 2v + 3w = 0; -3u + 2v + 0 = 0$; $u = \frac{2}{3}v$.  
+Thus the eigen-vector associated with $\lambda = 4$ is given by:  
+
+$$ 
+ x = v
+\begin{bmatrix}
+    \frac{2}{3} \\
+    1 \\
+    0 \\
+\end{bmatrix} 
+$$  
+
+$\forall$ $v$ $\epsilon$ $\mathbb{C}$  
+</br>
+**Eigen-vector For $\lambda = 6$**  
+$$
+\begin{bmatrix}
+    1-6 & 2 & 3 \\
+    0 & 4-6 & 5 \\
+    0 & 0 & 6-6 \\
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+    u \\
+    v \\
+    w \\
+\end{bmatrix}  = 0
+$$  
+$$
+\begin{bmatrix}
+    -5 & 2 & 3 \\
+    0 & -2 & 5 \\
+    0 & 0 & 0 \\
+\end{bmatrix} 
+\times
+\begin{bmatrix}
+    u \\
+    v \\
+    w \\
+\end{bmatrix}  = 0; 
+$$ 
+
+Clearly, the last row provides a trivial solution.  
+$-2v + 5w = 0; v = \frac{5}{2}w; -5u + 2v + 3w = 0$; $-5u + 2\times\frac{5}{2}w + 3w = 0$; $-5u + 5w + 3w = 0$; $u = \frac{8}{5}w$  
+Thus the eigen-vector associated with $\lambda = 6$ is given by:  
+
+$$ 
+ x = w
+\begin{bmatrix}
+    \frac{8}{5} \\
+    \frac{5}{2} \\
+    1 \\
+\end{bmatrix}
+$$  
+
+$\forall$ $w$ $\epsilon$ $\mathbb{C}$  
+
+Hence, the eigen vectors corresponding to $\lambda = 1, 4, 6$ are:  
+
+
+$$ 
+ x = u
+\begin{bmatrix}
+    1 \\
+    0 \\
+    0 \\
+\end{bmatrix}; 
+ v
+\begin{bmatrix}
+    \frac{2}{3} \\
+    1 \\
+    0 \\
+\end{bmatrix};  
+w
+\begin{bmatrix}
+    \frac{8}{5} \\
+    \frac{5}{2} \\
+    1 \\
+\end{bmatrix}
+$$
+$\forall$ $u, v, w$ $\epsilon$ $\mathbb{C}$ respectively.
+
+
+
+
+
+
+
+
+
+
+
+
+
