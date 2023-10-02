@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-<center> **1. Problem 1**</center>  
+<center> **Problem 1**</center>  
 (Bayesian). A new test for multinucleoside-resistant (MNR) human immunodeficiency virus type 1
 (HIV-1) variants was recently developed. The test maintains 96% sensitivity, meaning that, for those
 with the disease, it will correctly report “positive” for 96% of them. The test is also 98% specific,
@@ -16,31 +16,36 @@ meaning that, for those without the disease, 98% will be correctly reported as �
 is considered to be rare (albeit emerging), with about a .1% or .001 prevalence rate. Given the
 prevalence rate, sensitivity, and specificity estimates, what is the probability that an individual who is
 reported as positive by the new test actually has the disease? If the median cost (consider this the best
-point estimate) is about $100,000 per positive case total and the test itself costs $1000 per
+point estimate) is about 100,000 dollars per positive case total and the test itself costs $1000 per
 administration, what is the total first-year cost for treating 100,000 individuals?  
 </br>
 **Solution 1**  
-Let A1 = Presence of HIV-1 virus. i.e Actual percent (probability) of MNR HIV-1 and  
-A2 = Absence of HIV-1 virus. i.e. the probability of not gettng
+*1(a) Probability that an individual reported positive has the disease. i.e. a true positive*  
+Let event B = Positive test, A1 = Actual HIV pt, A2 = Actual non-HIV  
+
+P(A1) = 0.001; P(A2) = 0.999; P(B|A1) = 0.96  
+P(B|A2) = 1 - 0.98 = 0.02  
+Using Bayes formula  
+P(A1|B) =  P(B|A1)P(A1) / P(B|A1)P(A1) + P(B|A2)P(A2)  
 ```{r}
-# Let A1 = Actual percent (probability) of MNR HIV-1
-#event B = Positive test, A1 = Actual HIV pt, A2 = Actual non-HIV**
-
-#P(A1) = 0.001
-
-#P(A2) = 0.999
-
-#P(B|A1) = 0.96
-
-#P(B|A2) = 1 - 0.98 = 0.02
-
-#Using Bayes formula
-
-#(A1 | B) =  P(B|A1)P(A1) / P(B|A1)P(A1) + P(B|A2)P(A2)
+p_true_positive = round((.96*.001)/((.96*.001)+(.02*.999)), 4)
+p_true_positive
 ```
+
+*1(b) Total first-year cost for treating 100,000 individuals*  
+```{r}
+# $100,000 per positive case total and the test costs $1000 per administration
+
+positive_cases_prevalence = 100000 * 0.001 # about 0.1% prevalence rate
+cost_to_administer_test = 1000 * 100000 # it costs $1000 to administer each test
+cost_to_treat_positive = positive_cases_prevalence * 100000 # cost to treat positive cases
+total_cost = cost_to_administer_test + cost_to_treat_positive
+total_cost
+```
+
 </br>
 
-<center> **2. Problem 2.** </center>  
+<center> **Problem 2.** </center>  
 (Binomial). The probability of your organization receiving a Joint Commission inspection in any given
 month is .05. What is the probability that, after 24 months, you received exactly 2 inspections? What is
 the probability that, after 24 months, you received 2 or more inspections? What is the probability that
@@ -247,6 +252,66 @@ knowledge assumption), you know that the waiting time is uniformly distributed f
 What is the probability that this patient will wait more than 10 minutes? If the patient has already
 waited 10 minutes, what is the probability that he/she will wait at least another 5 minutes prior to being
 seen? What is the expected waiting time?  
+</br>
+**Solution 7**  
+This assumes a uniform distribution
+*7(a) Probability that the patient will wait more than 10 minutes*
+```{r}
+# P(X > 10) = 1 - P(X<=10)
+p_10mins_or_less = punif(10,0,30)
+p_more_than_10mins = round((1 - p_10mins_or_less), 4)
+p_more_than_10mins
+```
+</br>  
+*7(b) If the patient has already waited 10mins, what is the probability that the patient will wait at least another 5 minutes*
+
+```{r}
+p_15mins = 1 - punif(15,10,30)
+P_10mins =  1-punif(10,10,30)
+p_atleast_another_5mins = round((p_15mins/P_10mins), 4)
+p_atleast_another_5mins
+```
+</br>
+*7(c) Expected waiting time*
+```{r}
+expected_wait_time = (0 + 30)/2
+expected_wait_time
+```
+
+<center> **Problem 8** </center>  
+Your hospital owns an old MRI, which has a manufacturer’s lifetime of about 10 years (expected value).
+Based on previous studies, we know that the failure of most MRIs obeys an exponential distribution.
+What is the expected failure time? What is the standard deviation? What is the probability that your
+MRI will fail after 8 years? Now assume that you have owned the machine for 8 years. Given that you
+already owned the machine 8 years, what is the probability that it will fail in the next two years?  
+</br>  
+**Solution 8**  
+The exponential distribution is given by $f(x) = \lambda e^{-\lambda x}$  
+Expected value, E(x) = 10  
+*8(a) What is the expected failure time*  
+$E(X) = \frac{1}{\lambda}$  
+$\lambda = 1/10 = 0.1/year$  
+So, the parameter $\lambda=0.1$; Therefore the expected failure time is 10 years.  
+</br>
+*8(b) What is the Standard Deviation?*  
+$\sigma = \frac{1}{\lambda}$  
+$sigma = \frac{1}{0.1} = 10$  
+Therefore, the standard deviation is 10 years as well.  
+</br>  
+*8(c) Probability MRI will fail after 8 years*  
+P(X > 8) = 1 - P(X<=8)  
+```{r}
+p_fail_after_8years = round((1 - pexp(8, 0.1)), 4)
+p_fail_after_8years
+```
+</br>
+*8(d) Probability that the MRI machine will fail in the next two years after owning it for 8 years.*
+```{r}
+p_fail_after_2years_given8 = round(((pexp(10,.1)-pexp(8,.1))*(1-pexp(8,.1)))/(1-pexp(8,.1)), 4)
+p_fail_after_2years_given8
+```
+
+
 
 
 
