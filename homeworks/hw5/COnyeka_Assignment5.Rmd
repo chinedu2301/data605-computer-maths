@@ -1,0 +1,200 @@
+---
+title: "CUNY SPS HW 5"
+author: "Chinedu Onyeka"
+date: "2023-10-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### 1. Problem 1  
+(Bayesian). A new test for multinucleoside-resistant (MNR) human immunodeficiency virus type 1
+(HIV-1) variants was recently developed. The test maintains 96% sensitivity, meaning that, for those
+with the disease, it will correctly report “positive” for 96% of them. The test is also 98% specific,
+meaning that, for those without the disease, 98% will be correctly reported as “negative.” MNR HIV-1
+is considered to be rare (albeit emerging), with about a .1% or .001 prevalence rate. Given the
+prevalence rate, sensitivity, and specificity estimates, what is the probability that an individual who is
+reported as positive by the new test actually has the disease? If the median cost (consider this the best
+point estimate) is about $100,000 per positive case total and the test itself costs $1000 per
+administration, what is the total first-year cost for treating 100,000 individuals?  
+
+#### **Solution 1**  
+Let A1 = Presence of HIV-1 virus. i.e Actual percent (probability) of MNR HIV-1 and  
+A2 = Absence of HIV-1 virus. i.e. the probability of not gettng
+```{r}
+# Let A1 = Actual percent (probability) of MNR HIV-1
+#event B = Positive test, A1 = Actual HIV pt, A2 = Actual non-HIV**
+
+#P(A1) = 0.001
+
+#P(A2) = 0.999
+
+#P(B|A1) = 0.96
+
+#P(B|A2) = 1 - 0.98 = 0.02
+
+#Using Bayes formula
+
+#(A1 | B) =  P(B|A1)P(A1) / P(B|A1)P(A1) + P(B|A2)P(A2)
+```
+
+#### 2. Problem 2.  
+(Binomial). The probability of your organization receiving a Joint Commission inspection in any given
+month is .05. What is the probability that, after 24 months, you received exactly 2 inspections? What is
+the probability that, after 24 months, you received 2 or more inspections? What is the probability that
+your received fewer than 2 inspections? What is the expected number of inspections you should have
+received? What is the standard deviation?  
+
+#### **Solution 2**  
+Let p= probability of receiving a joint commission inspection in any given month and q=1-p represent the probability of not receiving the a joint inspection in any given month.  
+</br>
+*2(a) Probability of exactly 2 inspection after 24 months.*    
+ $P(X = x) = \binom{n}{x}p^{x}(1-p)^{n-x}$  
+ $P(X=2) = \binom{24}{2}(0.05^{2})(1-0.05)^{24-2} = 0.2232$  
+ Therefore, the probability of getting exactly 2 inspections after 24 months is 0.2232
+```{r}
+# P(X=2) = 
+p = round(dbinom(2, 24, 0.05), 4)
+p
+```
+</br>
+*2(b) Probability of 2 or more inspections*  
+P(X = 2 or more) =  1 - P(fewer than 2) = 1 - P(x = 0 or 1).  
+P(X = 2 or more) = 1 - P(X = 0) + P(X = 1)  
+P(X = 2 or more $= 1- [\binom{24}{0}(0.05^{0})(1-0.05)^{24-0} +  \binom{24}{1}(0.05^{1})(1-0.05)^{24-1}]= 1-(0.291989+0.368828)$  
+ = $1-0.660817 = 0.339183 = 0.33918$  
+Therefore, the probability of 2 or more inspections is about 0.3392  
+```{r}
+# P(X = 2 or more) = 
+p_2_or_more = round(1 - (dbinom(0, 24, 0.05) + dbinom(1, 24, 0.05)), 4)
+p_2_or_more
+```
+</br>
+*2(c) Probability of fewer than 2 inspections*  
+P(X< 2) = P(X = 0) + P(X = 1) = $\binom{24}{0}(0.05^{0})(1-0.05)^{24-0} +  \binom{24}{1}(0.05^{1})(1-0.05)^{24-1}$  
+$P(X < 2) = 0.291989 + 0.368828 = 0.660817 = 0.6608$  
+Therefore the probability of fewer than 2 inspections is about 0.6608  
+```{r}
+# P(X < 2) = 
+p_less_than_2 = round(dbinom(0, 24, 0.05) + dbinom(1, 24, 0.05), 4)
+p_less_than_2
+```  
+</br>  
+*2(d) Expected number of inspections*  
+The expected number of inspections will be given by the expected value of a binomial probability distribution with the given parameters. E(x) = np  
+$E(x) = 24 * 0.05 = 1.2$  
+</br>  
+*2(e) Standard Deviation of the distribution*  
+The standard deviation of the binomial distribution is given by:  
+$ \sigma = \sqrt{npq}$  
+$=> \sqrt{24 * 0.05 * (1-0.05)} = 1.0677$  
+
+#### Problem 3.   
+(Poisson). You are modeling the family practice clinic and notice that patients arrive at a rate of 10 per
+hour. What is the probability that exactly 3 arrive in one hour? What is the probability that more than
+10 arrive in one hour? How many would you expect to arrive in 8 hours? What is the standard
+deviation of the appropriate probability distribution? If there are three family practice providers that can
+see 24 templated patients each day, what is the percent utilization and what are your recommendations?  
+
+#### **Solution 3**  
+The poison distribution formula is given by:  
+$f(x) = \frac{\lambda ^{x}}{x!}e^{-\lambda}$  
+$\lambda = 10/hour$  
+*3(a) Probability of exactly 3 in one hour*  
+$P(x=3) = \frac{10^{3}}{3!}e^{-10} = 0.0076$  
+Therefore the probability of exactly 3 per hour is about 0.0076  
+```{r}
+# P(X=3) = 
+p = round(dpois(3, 10), 4)
+p
+```
+</br>  
+*3(b) Probability that more than 10 arrive in an hour*  
+P(X = more than 10) = 1 - P(X < 10) = 1 - P(X <= 9)
+```{r}
+# The ppois function in R calculates the probability of a random variable that will be equal to or less than a number.
+p_less_than_equal_9 = ppois(9, 10)
+p_10_or_more = round((1 - p_less_than_equal_9), 4)
+p_10_or_more
+```
+</br>  
+*3(b) How many would you expect to arrive in 8 hours*  
+The expected value of a poison distribution is $\lambda$. Therefore, we will expect 10 to arrive in an hour and expect 10 x 8 = 80 to arrive in 8 hours.  
+
+</br>  
+*3(c) Standard deviation*  
+$ \sigma = \sqrt{\lambda} = \sqrt{10} = 3.1623$  
+*3(d) Percent Utilization if there are 3 family practice providers who can see 24 patients daily*  
+```{r}
+number_patients_seen_daily = 3 * 24
+number_expected_to_arrive_8hours = 80
+percent_utilization = (number_patients_seen_daily/number_expected_to_arrive_8hours) * 100
+percent_utilization
+```
+Based on the arrival rate and how many patients can be attended to, I will recommend having another family practice provider who is willing to work part time hours so that all patients can be seen before close of work or recommend extending office hours but extending office hours would mean additional patients would arrive or extending hours to see the additional 10% while they will stop accepting new patients after the close of business.  
+
+#### Problem 4.   
+(Hypergeometric). Your subordinate with 30 supervisors was recently accused of favoring nurses. 15
+of the subordinate’s workers are nurses and 15 are other than nurses. As evidence of malfeasance, the
+accuser stated that there were 6 company-paid trips to Disney World for which everyone was eligible.
+The supervisor sent 5 nurses and 1 non-nurse. If your subordinate acted innocently, what was the
+probability he/she would have selected five nurses for the trips? How many nurses would we have
+expected your subordinate to send? How many non-nurses would we have expected your subordinate to
+send?  
+
+#### **Solution 4**  
+The hyper geometric distribution is given by:  
+$P(X = x) = \frac{\binom{m}{x}\binom{M-m}{k-x}}{\binom{M}{k}}$  
+Where M = population size, m = number of success states in the population,  
+k= quantity drawn in each trial and x = number of observed successes.  
+
+M = Total number of workers supervised: 30  
+m = Number of nurses among those workers: 15  
+M- m = Number of non-nurses among those workers: 15  
+k = Total number of workers selected for the trips: 6  
+x = Number of nurses to be selected for the trips: 5  
+k - x = Number of non-nurses to be selected for the trips: 1  
+</br>
+*4(a) Probability the subordinate would have selected exactly five nurses*    
+$P(X = 5) = \frac{\binom{15}{5}\binom{30-15}{6-1}}{\binom{30}{6}} = \frac{\binom{15}{5}\binom{15}{1}}{\binom{30}{6}}$  
+$=> P(X=5) = \frac{3003 *15}{593775}=0.0759$
+```{r}
+#P(5), x=5,m=15,n=15,k=6
+p_5_nurses_1_non_nurse = round(dhyper(5,15,15,6,log=FALSE), 4)
+p_5_nurses_1_non_nurse
+```  
+</br>
+*4(b) Expected number of nurses to send*  
+Probability of sending nurses = 15/30 = 0.5; Number of trips = 6  
+Expected number of nurses to send = 6 * 0.5 = 3  
+Therefore, we would expect about 3 nurses to be sent on the trips.  
+</br>
+*4(c) Expected number of non-nurses to send*  
+Probability of sending non-nurses = 15/30 = 0.5; Number of trips = 6  
+Expected number of non-nurses to send = 6 * 0.5 = 3  
+Therefore, we would expect about 3 non-nurses to be sent on the trips.  
+</br>  
+
+#### Problem 5.  
+The probability of being seriously injured in a car crash in an unspecified location is about
+.1% per hour. A driver is required to traverse this area for 1200 hours in the course of a year. What is
+the probability that the driver will be seriously injured during the course of the year? In the course of 15
+months? What is the expected number of hours that a driver will drive before being seriously injured?
+Given that a driver has driven 1200 hours, what is the probability that he or she will be injured in the
+next 100 hours?  
+
+#### **Solution 5**
+
+
+
+
+
+
+
+
+
+ 
+
+
