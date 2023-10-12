@@ -1,0 +1,177 @@
+---
+title: "CUNY SPS HW 7"
+author: "Chinedu Onyeka"
+date: "2023-10-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<center> **Problem 1**</center> 
+Let X1, X2, . . . , Xn be n mutually independent random variables, each of
+which is uniformly distributed on the integers from 1 to k. Let Y denote the
+minimum of the Xi’s. Find the distribution of Y .  
+</br>
+**Solution 1**  
+Assuming that each $X_{i}$ has k possibilities, we will have $k^{n}$ possible values in total. 
+1 is the minimum of the Xi’s, the number of ways of getting Y.  
+for $P(x = 1) = \frac{k^{n} - (k-1)^{n}}{k^{n}}$  
+for $P(x = 2) = \frac{(k-2+1)^{n} - (k-2)^{n}}{k^{n}}$  
+For $x_{1}, x_{2}, . . . , x_{n}$ mutually independent random variables, If Y = j  then, the minimum value j is given as:  
+$P(x = j) = \frac{(k-j+1)^{n} - (k-j)^{n}}{k^{n}}$  
+
+
+<center> **Problem 2**</center>   
+Your organization owns a copier (future lawyers, etc.) or MRI (future doctors).
+This machine has a manufacturer’s expected lifetime of 10 years. This means
+that we expect one failure every ten years. (Include the probability statements
+and R Code for each part.).  
+</br>
+*Problem 2a (Geometric)*  
+What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as a geometric. (Hint: the probability is
+equivalent to not failing during the first 8 years..)  
+**Solution 2a (Geometric)**  
+*Probability of failure in 8 years*  
+Given that p is the probability of success and q = 1 - p is the probability of failure for one trial, the geometric probability distribution is given by: 
+$P(X=x) = p(1−p)^{x-1}$, x = 1, 2, 3, ... where x is the number of trials up to the first success
+
+```{r}
+x = 8
+p = 1 / 10 # probability of success
+prob_geometric = p * ((1 - p)^(8 - 1))
+prob_fail_8years_geometric =  round(prob_geometric, 4)
+prob_fail_8years_geometric
+```
+*Expected value*  
+The expected value of a geometric distribution is given by $E(X) = 1/p$
+```{r}
+expected_value_geometric = 1/p
+expected_value_geometric
+```
+*Standard Deviation*  
+The standard deviation of a geometric distribution is given by $S.D = \frac{\sqrt{1-p}}{p}$
+```{r}
+sd_geom = sqrt(1 - p)/p 
+sd_geometric = round(sd_geom, 4)
+sd_geometric
+```
+</br>
+*Problem 2b (Exponential)*  
+What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as an exponential.  
+**Solution 2b (Exponential)**  
+*Probability of failure in 8 years*  
+Given the rate parameter $\lambda$, The exponential distribution is given by:  
+$P(X=x) = \lambda e^{-\lambda x}$  
+```{r}
+rate = 1/10
+x = 8
+prob_exponetial = rate * exp(-rate * x)
+prob_fail_8years_exponential = round(prob_exponetial, 4)
+prob_fail_8years_exponential
+```
+*Expected value*  
+The expected value of an exponential distribution is given by $E(X) = 1/\lambda$  
+```{r}
+expected_value_exponential = 1/rate
+expected_value_exponential
+```
+*Standard Deviation*  
+The standard deviation of an exponential distribution is given by $\sigma = \frac{1}{\lambda}$  
+```{r}
+sd_expo = 1/rate
+sd_exponential = round(sd_expo, 4)
+sd_exponential
+```
+</br>
+*Problem 2c (Binomial)*  
+What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as a binomial. (Hint: 0 success in 8
+years)  
+**Solution 2c (Binomial)**  
+*Probability of 0 success in 8 years*  
+Given the probability of success p, the probability of x successes in n trials is given by:  
+$P(x,n,p)=\binom{n}{x}p^{x}(1−p)^{n-x}$  
+```{r}
+p = 1/10
+prob_0_success = choose(8, 0) * p^0 * (1-p)^8
+prob_0_success_in_8_years = round(prob_0_success, 4)
+prob_0_success_in_8_years
+```
+OR
+```{r}
+prob = dbinom(0, 8, p)
+prob_0_success_in_8_trials = round(prob, 4)
+prob_0_success_in_8_trials
+```
+*Expected value*  
+The expected value of a binomial distribution is given by $E(X) = np$  
+```{r}
+n = 8
+p = 1/10
+expected_value_binomial = n*p
+expected_value_binomial
+```
+*Standard Deviation*  
+The standard deviation of a binomial distribution is given by $\sigma = \sqrt{npq}$  
+```{r}
+sd_binom = sqrt(n*p*(1-p))
+sd_binomial = round(sd_binom, 4)
+sd_binomial
+```
+</br>
+*Problem 2d (Poison)*  
+What is the probability that the machine will fail after 8 years?. Provide also the
+expected value and standard deviation. Model as a Poisson.  
+**Solution 2d (Poison)**  
+*Probability of failure in 8 years*  
+The poison distribution formula is given by:  
+$P(X=x) = \frac{\lambda ^{x}}{x!}e^{-\lambda}$  
+$\lambda = 10$  
+
+```{r}
+rate = 8 * (1 / 10)
+e <- exp(1)
+prob_poison = (rate^0 * exp(-rate)) / factorial(0)
+prob_fail_8years_poison = round(prob_poison, 4)
+prob_fail_8years_poison
+```
+OR
+```{r}
+prob_pois = dpois(0, rate)
+prob_poison_8years = round(prob_pois, 4)
+prob_poison_8years
+```
+*Expected value*  
+The expected value of the poison distribution is given by: $E(X) = \lambda$
+```{r}
+expected_value_poison <- rate
+expected_value_poison
+```
+*Standard Deviation*  
+The standard deviation of the poison distribution is given by:  
+$\sigma = \sqrt{\lambda}$
+```{r}
+sd_pois = sqrt(rate)
+sd_poison = round(sd_pois, 4)
+sd_poison
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
