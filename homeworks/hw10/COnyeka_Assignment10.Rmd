@@ -1,0 +1,67 @@
+---
+title: "CUNY SPS HW 10"
+author: "Chinedu Onyeka"
+date: "2023-10-31"
+output: html_document
+---
+
+<center> <b> Question </b> </center>
+Smith is in jail and has 1 dollar; he can get out on bail if he has 8 dollars. A guard agrees to make a series of bets with him. If Smith bets A dollars, he wins A dollars with probability .4 and loses A dollars with probability .6. Find the probability that he wins 8 dollars before losing all of his money if  
+
+(a)he bets 1 dollar each time (timid strategy).  
+
+(b)he bets, each time, as much as possible but not more than necessary to bring his fortune up to 8  dollars (bold strategy).  
+
+(c)Which strategy gives Smith the better chance of getting out of jail?  
+
+**Solution (a) - Timid Strategy**
+
+Using Gambler ruin Probability method
+
+$P_{z} = \frac{1-(q/p)^{z}}{1 - (q/p)^{m}}$ $where, q \neq  p , 0 \leq z \leq m$ 
+
+and $P_{z} =$ the probability that the gambler’s stake reaches m without ever having reached 0.
+
+```{r}
+z = 1
+m = 8
+p = 0.4
+q = 0.6
+
+prob_timid = round(((1-(q/p)^z) / (1-(q/p)^m)), 4)
+prob_timid
+```
+*Using the Timid Strategy,  the probability that he wins 8 dollars before losing all of his money if he bets 1 dollar each time is 0.0203*  
+
+</br>
+**Solution (b) - Bold Strategy**
+
+If he uses the bold strategy, it means that he would bet all the money each time he wins to get his fortune up to 8 dollars as soon as possible. So, in this case there are only 4 steps (3 trials):  1, 2 (1st win), 4 (2nd win), 8 (3rd win) to reach $8.  
+1st trial: Bet 1 dollars to get another 1 dollar and get fortune to 2 dollars.  
+2nd trial: Bet all 2 dollars to get another 2 dollars to bring fortune up to 4 dollars.  
+3rd trial: Bet all 4 dollars to get another 4 dollars to bring fortune up to 8 dollars.  
+NB: For each trial, he has the same probability of success (p).  
+
+
+Because this is bold strategy, we can also solve this problem by using the Binomial distribution.  
+Binomial method:
+
+Number of trials, n = 3
+
+Number of successes, x = 3
+
+$_{x}^{n}\textrm{C}p^{x}(1-p)^{n-x}$
+
+$_{3}^{3}\textrm{C}*0.4^{3}*(1-0.4)^{3-3}$
+
+= 0.064  
+```{r}
+prob_bold = round(dbinom(3, 3, 0.4), 4)
+prob_bold
+```
+*Using the Bold Strategy,  the probability that he wins 8 dollars before losing all of his money if he bets all each time is 0.064*  
+
+</br>
+**Solution (c)**
+
+The Bold strategy gives Smith approximately 3 times better chance of getting out of jail than the Timid strategy. hence, I will recommend the Bold Strategy.
