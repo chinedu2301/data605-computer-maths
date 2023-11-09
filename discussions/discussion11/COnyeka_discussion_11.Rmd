@@ -1,0 +1,104 @@
+---
+title: "CUNY SPS HW11"
+author: "Chinedu Onyeka"
+date: "2023-11-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<center><h3>Question</h3></center>
+Using the “cars” dataset in R, build a linear model for stopping distance as a function of speed and
+replicate the analysis of your textbook chapter 3 (visualization, quality evaluation of the model, and
+residual analysis.)
+
+<center><h3>Solution</h3></center>
+
+*Load required libraries*
+```{r library, message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+<b>Take a glimpse at the dataset</b>
+
+```{r}
+glimpse(cars)
+```
+We can see that the dataset has 50 rows and 2 columns (speed and dist).  
+
+<b>Summary for the dataset</b>
+```{r}
+summary(cars)
+```
+<b> Visualize the data </b>
+
+```{r warning=FALSE}
+p = ggplot(cars, aes(x=speed, y=dist)) + geom_point() + theme(panel.grid.major = element_line(colour = "lemonchiffon3"),
+    panel.grid.minor = element_line(colour = "lemonchiffon3"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(family = "sans",
+        size = 11), axis.text.y = element_text(family = "sans",
+        size = 11), plot.title = element_text(size = 15,
+        hjust = 0.5), panel.background = element_rect(fill = "gray85"),
+    plot.background = element_rect(fill = "antiquewhite")) +labs(title = "Stopping Distance vs Speed",
+    x = "Speed", y = "Stopping Distance")
+p
+```
+
+From the scatter plot, as the speed increases, the stopping distance tend to increase as well.  
+
+<b> Build the Model </b>
+```{r}
+lm_cars = lm(cars$dist ~ cars$speed)
+lm_cars
+```
+From the output of the model, the linear function is given by:  
+$dist = 3.932 * speed - 17.579$  
+
+<b>Evaluate the Model - Quality Evaluation</b>  
+```{r}
+# Check the summary of the model
+summary(lm_cars)
+```
+The values from the summary show that there is little variability in the data and the result is statistically significant.  
+
+<b>Residual Analysis</b>  
+*Residual vs Fitted plot*
+```{r}
+plot(fitted(lm_cars),resid(lm_cars), main="Residuals vs Fitted", xlab = "Fitted", ylab = "Residuals")
+abline(0, 0)
+```
+
+From this plot, we can say that there seems to be constant variance for the residuals and the data is not heteroscedacity.  
+
+*QQ Plot*
+```{r}
+qqnorm(resid(lm_cars))
+qqline(resid(lm_cars))
+```
+
+From the Q-Q plot, we can see that the residuals follow a nearly normal distribution.  
+
+*Entire plot*
+```{r}
+par(mfrow=c(2,2))
+plot(lm_cars)
+```
+
+From the residual analysis, we can see that the conditions for linear regression are satisfied for this data and it can be fitted by using a linear model approach. Although I am not satisfied with the R-squared value of about 0.65, acceptable values for the R-squared value is highly dependent on the use case of the model.
+
+
+
+
+
+
+
+
+
+
+
+
