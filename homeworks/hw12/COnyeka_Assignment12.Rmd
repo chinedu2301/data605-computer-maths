@@ -1,0 +1,49 @@
+---
+title: "CUNY SPS HW 12"
+author: "Chinedu Onyeka"
+date: "2023-11-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<center><h3>Question</h3></center>
+The attached who.csv dataset contains real-world data from 2008. The variables included follow:  
+- `Country`: name of the country
+- `LifeExp`: average life expectancy for the country in years
+- `InfantSurvival`: proportion of those surviving to one year or more
+- `Under5Survival`: proportion of those surviving to five years or more
+- `TBFree`: proportion of the population without TB
+- `PropMD`: proportion of the population who are MDs
+- `PropRN`: proportion of the population who are RNs
+- `PersExp`: mean personal expenditures on healthcare in US dollars at average exchange rate
+- `GovtExp`: mean government expenditures per capita on healthcare, US dollars at average exchange rate
+- `TotExp`: sum of personal and government expenditures  
+
+
+<center><h3>Solution</h3></center>
+
+*Load required libraries*
+```{r library, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(kableExtra)
+```
+
+<b>Read the Data and take a glimpse at the dataset</b>
+
+```{r read-data, message=FALSE, warning=FALSE}
+url_who <- ""
+who_raw <- read_csv(url_who)
+```
+
+
+```{r}
+glimpse(cars)
+```
+
+<center><h3>Question 1</h3></center>
+Provide a scatterplot of LifeExp~TotExp, and run simple linear regression. Do not transform the
+variables. Provide and interpret the F statistics, R^2, standard error,and p-values only. Discuss
+whether the assumptions of simple linear regression met.

@@ -1,7 +1,7 @@
 ---
-title: "CUNY SPS HW11"
+title: "CUNY SPS Discussion 11"
 author: "Chinedu Onyeka"
-date: "2023-11-08"
+date: "2023-11-09"
 output: html_document
 ---
 
@@ -11,9 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 <center><h3>Question</h3></center>
-Using the “cars” dataset in R, build a linear model for stopping distance as a function of speed and
-replicate the analysis of your textbook chapter 3 (visualization, quality evaluation of the model, and
-residual analysis.)
+Using the [salary_dataset from kaggle](https://www.kaggle.com/datasets/abhishek14398/salary-dataset-simple-linear-regression), build a linear model for salary vs years of experience. Conduct residual analysis. Was the linear model appropriate? Why or why not? 
 
 <center><h3>Solution</h3></center>
 
@@ -22,21 +20,32 @@ residual analysis.)
 library(tidyverse)
 ```
 
-<b>Take a glimpse at the dataset</b>
+<b>Read the data and take a glimpse at the dataset</b>  
 
-```{r}
-glimpse(cars)
+*Read the data*
+```{r warning=FALSE, message=FALSE}
+salary_url = "https://raw.githubusercontent.com/chinedu2301/data605-computer-maths/main/discussions/discussion11/salary_dataset.csv"
+# read the data from github url
+salary_dataset_raw = read_csv(salary_url) 
 ```
-We can see that the dataset has 50 rows and 2 columns (speed and dist).  
+
+*Take a glimpse at the data*
+```{r}
+salary_dataset = salary_dataset_raw %>% select("YearsExperience", "Salary")
+glimpse(salary_dataset)
+```
+
+We can see that the dataset has 30 rows and 2 columns (Salary and YearsExperience).  
 
 <b>Summary for the dataset</b>
 ```{r}
-summary(cars)
+summary(salary_dataset)
 ```
 <b> Visualize the data </b>
 
 ```{r warning=FALSE}
-p = ggplot(cars, aes(x=speed, y=dist)) + geom_point() + theme(panel.grid.major = element_line(colour = "lemonchiffon3"),
+p = ggplot(salary_dataset, aes(x=YearsExperience, y=Salary)) + geom_point() + 
+    theme(panel.grid.major = element_line(colour = "lemonchiffon3"),
     panel.grid.minor = element_line(colour = "lemonchiffon3"),
     axis.title = element_text(size = 13),
     axis.text = element_text(size = 11),
@@ -44,41 +53,41 @@ p = ggplot(cars, aes(x=speed, y=dist)) + geom_point() + theme(panel.grid.major =
         size = 11), axis.text.y = element_text(family = "sans",
         size = 11), plot.title = element_text(size = 15,
         hjust = 0.5), panel.background = element_rect(fill = "gray85"),
-    plot.background = element_rect(fill = "antiquewhite")) +labs(title = "Stopping Distance vs Speed",
-    x = "Speed", y = "Stopping Distance")
+    plot.background = element_rect(fill = "antiquewhite")) +labs(title = "Salary vs YearsExperience",
+    x = "YearsExperience", y = "Salary")
 p
 ```
 
-From the scatter plot, as the speed increases, the stopping distance tend to increase as well.  
+From the scatter plot, as the YearsExperience increases, the Salary tend to increase as well. There is a clear linear relationship between the Salary and YearsExperience in the given data. 
 
 <b> Build the Model </b>
 ```{r}
-lm_cars = lm(cars$dist ~ cars$speed)
-lm_cars
+lm_salary = lm(salary_dataset$Salary ~ salary_dataset$YearsExperience)
+lm_salary
 ```
 From the output of the model, the linear function is given by:  
-$dist = 3.932 * speed - 17.579$  
+$Salary = 9450 * YearsExperience - 24848$  
 
 <b>Evaluate the Model - Quality Evaluation</b>  
 ```{r}
 # Check the summary of the model
-summary(lm_cars)
+summary(lm_salary)
 ```
 The values from the summary show that there is little variability in the data and the result is statistically significant.  
 
 <b>Residual Analysis</b>  
 *Residual vs Fitted plot*
 ```{r}
-plot(fitted(lm_cars),resid(lm_cars), main="Residuals vs Fitted", xlab = "Fitted", ylab = "Residuals")
+plot(fitted(lm_salary),resid(lm_salary), main="Residuals vs Fitted", xlab = "Fitted", ylab = "Residuals")
 abline(0, 0)
 ```
 
-From this plot, we can say that there seems to be constant variance for the residuals and the data is not heteroscedacity.  
+From this plot, we can say that there seems to be constant variance for the residuals and the data is not heteroscedastic.  
 
 *QQ Plot*
 ```{r}
-qqnorm(resid(lm_cars))
-qqline(resid(lm_cars))
+qqnorm(resid(lm_salary))
+qqline(resid(lm_salary))
 ```
 
 From the Q-Q plot, we can see that the residuals follow a nearly normal distribution.  
@@ -86,10 +95,10 @@ From the Q-Q plot, we can see that the residuals follow a nearly normal distribu
 *Entire plot*
 ```{r}
 par(mfrow=c(2,2))
-plot(lm_cars)
+plot(lm_salary)
 ```
 
-From the residual analysis, we can see that the conditions for linear regression are satisfied for this data and it can be fitted by using a linear model approach. Although I am not satisfied with the R-squared value of about 0.65, acceptable values for the R-squared value is highly dependent on the use case of the model.
+From the residual analysis, we can see that the conditions for linear regression are satisfied for this data and it can be fitted by using a linear model approach. The R-squared value of about 0.957, acceptable values for the R-squared value is highly dependent on the use case of the model. From the results of the model, I believe that it is appropriate to use a simple linear regression model for this data
 
 
 
