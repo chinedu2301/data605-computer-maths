@@ -11,17 +11,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <center><h3>Question</h3></center>
 The attached who.csv dataset contains real-world data from 2008. The variables included follow:  
-- `Country`: name of the country
-- `LifeExp`: average life expectancy for the country in years
-- `InfantSurvival`: proportion of those surviving to one year or more
-- `Under5Survival`: proportion of those surviving to five years or more
-- `TBFree`: proportion of the population without TB
-- `PropMD`: proportion of the population who are MDs
-- `PropRN`: proportion of the population who are RNs
-- `PersExp`: mean personal expenditures on healthcare in US dollars at average exchange rate
-- `GovtExp`: mean government expenditures per capita on healthcare, US dollars at average exchange rate
+- `Country`: name of the country  
+- `LifeExp`: average life expectancy for the country in years  
+- `InfantSurvival`: proportion of those surviving to one year or more  
+- `Under5Survival`: proportion of those surviving to five years or more  
+- `TBFree`: proportion of the population without TB  
+- `PropMD`: proportion of the population who are MDs  
+- `PropRN`: proportion of the population who are RNs  
+- `PersExp`: mean personal expenditures on healthcare in US dollars at average exchange rate  
+- `GovtExp`: mean government expenditures per capita on healthcare, US dollars at average exchange rate  
 - `TotExp`: sum of personal and government expenditures  
-
 
 <center><h3>Solution</h3></center>
 
@@ -31,19 +30,263 @@ library(tidyverse)
 library(kableExtra)
 ```
 
-<b>Read the Data and take a glimpse at the dataset</b>
+<b>Read the Data into memory</b>
 
 ```{r read-data, message=FALSE, warning=FALSE}
-url_who <- ""
+url_who <- "https://raw.githubusercontent.com/chinedu2301/data605-computer-maths/main/homeworks/hw12/who.csv"
 who_raw <- read_csv(url_who)
 ```
 
+<b>Display the data</b>
+```{r display-data}
+who_raw_display = kable(who_raw) %>%
+                  kable_paper("hover", full_width = F) %>%
+                  scroll_box(width = "850px", height = "350px")
+who_raw_display
+```
 
-```{r}
-glimpse(cars)
+<br>
+<b>Glipmse of the data</b>
+```{r glimpse}
+glimpse(who_raw)
+```
+<br>
+<b>Summary of the data</b>
+```{r summary}
+summary(who_raw)
 ```
 
 <center><h3>Question 1</h3></center>
 Provide a scatterplot of LifeExp~TotExp, and run simple linear regression. Do not transform the
 variables. Provide and interpret the F statistics, R^2, standard error,and p-values only. Discuss
-whether the assumptions of simple linear regression met.
+whether the assumptions of simple linear regression met.  
+<br>
+
+<b> Scatter Plot </b>
+```{r 1-scatter-plot}
+p = ggplot(who_raw, aes(x=TotExp, y=LifeExp)) + geom_point() + theme_minimal() +
+    theme(panel.grid.major = element_line(colour = "lemonchiffon3"),
+    panel.grid.minor = element_line(colour = "lemonchiffon3"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(family = "sans",
+        size = 11), axis.text.y = element_text(family = "sans",
+        size = 11), plot.title = element_text(size = 15,
+        hjust = 0.5), panel.background = element_rect(fill = "gray85"),
+    plot.background = element_rect(fill = "antiquewhite")) +labs(title = "LifeExp vs TotExp",
+    x = "TotExp", y = "LifeExp")
+p
+```
+<br>
+
+<b> Simple Linear Regression </b>  
+```{r 1-simple-linear-regression}
+lm_who <- lm(LifeExp ~ TotExp, data = who_raw)
+summary(lm_who)
+```
+<b> Residual vs Fitted</b>
+```{r 1-residual-fitted}
+plot(fitted(lm_who),resid(lm_who), main="Residuals vs Fitted", xlab = "Fitted", ylab = "Residuals")
+abline(0, 0)
+```
+<br>
+<b>Q-Q Plot</b>
+```{r 1-qq-plot}
+qqnorm(resid(lm_who))
+qqline(resid(lm_who))
+```
+<br>  
+<b> Interpret the F statistics, R^2, standard error,and p-values only:</b>  
+F statistic: 65.26 on 1 and 188 DF  
+p-value: 7.714e-14 - The p-value being less than 0.05 means that the result is statistically significant.
+R-squared:  0.2577 - This means that the model only accounts for about 25% of variability in the data.  
+Residual standard error: The TotExp can deviate from the regression line by approximately 9.371  
+<br>
+There are four (4) main assumptions for Linear Regression and they are:  
+<li>Linearity: </li> The relationship between X and Y must be linear. As can be seen from the scatter plot above, LifeExp vs TotExp does not have a linear relationship and this condition is not satisfied.  
+<li>Homoscedacity: </li> There should be constant variance in the residuals. From the Residual vs Fitted Plot shown above, it does not appear that there is a constant variance and thus the homoscedacity criterion is not satisfied.  
+<li>Normality: </li>The data should be normally distributed. From the QQ plot shown above, the data does not follow a normal distribution.  
+<li>Independence: </li> The observations should be independent of each other. This may be difficult to determine from looking at the data and we may have to rely on the assumptions provided by the data collector.  
+Since the Linearity, Homoscedacity, and Normality conditions are not satisfied, we can conclude that the assumptions for Linear Regression are not met.  
+<br>
+
+<center><h3>Question 2</h3></center>
+Raise life expectancy to the 4.6 power (i.e., LifeExp^4.6). Raise total expenditures to the 0.06
+power (nearly a log transform, TotExp^.06). Plot LifeExp^4.6 as a function of TotExp^.06, and r
+re-run the simple regression model using the transformed variables. Provide and interpret the F
+statistics, R^2, standard error, and p-values. Which model is "better?"  
+<br>
+
+```{r 2-transform-data}
+who_raw2 <- who_raw %>% 
+            mutate(LifeExp2 = LifeExp^(4.6),
+            TotExp2 = TotExp^(0.06))
+```
+
+<b> Scatter Plot - Q2</b>
+```{r 2-scatter-plot}
+p2 = ggplot(who_raw2, aes(x=TotExp2, y=LifeExp2)) + geom_point() + theme_minimal() +
+    theme(panel.grid.major = element_line(colour = "lemonchiffon3"),
+    panel.grid.minor = element_line(colour = "lemonchiffon3"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(family = "sans",
+        size = 11), axis.text.y = element_text(family = "sans",
+        size = 11), plot.title = element_text(size = 15,
+        hjust = 0.5), panel.background = element_rect(fill = "gray85"),
+    plot.background = element_rect(fill = "antiquewhite")) +labs(title = "LifeExp2 vs TotExp2",
+    x = "TotExp2", y = "LifeExp2")
+p2
+```
+
+<br>
+<b> Simple Linear Regression - Q2 </b>  
+```{r 2-simple-linear-regression}
+lm_who2 <- lm(LifeExp2 ~ TotExp2, data = who_raw2)
+summary(lm_who2)
+```
+
+<b> Residual vs Fitted - Q2</b>
+```{r 2-residual-fitted}
+plot(fitted(lm_who2),resid(lm_who2), main="Residuals vs Fitted - Q2", xlab = "Fitted", ylab = "Residuals")
+abline(0, 0)
+```
+
+<br>
+<b>Q-Q Plot</b>
+```{r 2-qq-plot}
+qqnorm(resid(lm_who2))
+qqline(resid(lm_who2))
+```
+<br>  
+<b> Interpret the F statistics, R^2, standard error,and p-values only:</b>  
+F statistic: 507.7 on 1 and 188 DF  
+p-value: < 2.2e-16 - The p-value being less than 0.05 means that the result is statistically significant.
+R-squared:  0.7298 - This means that the model accounts for about 72.98% of variability in the data.  
+Residual standard error: The TotExp can deviate from the regression line by approximately 90490000 on 188 degrees of freedom
+<br>
+There are four (4) main assumptions for Linear Regression and they are:  
+<li>Linearity: </li> The relationship between X and Y must be linear. As can be seen from the scatter plot above, LifeExp vs TotExp does have a linear relationship and this condition is satisfied.  
+<li>Homoscedacity: </li> There should be constant variance in the residuals. From the Residual vs Fitted Plot shown above, it appears that there is a constant variance and thus the homoscedacity criterion is satisfied.  
+<li>Normality: </li>The data should be normally distributed. From the QQ plot shown above, the data follows a normal distribution.  
+<li>Independence: </li> The observations should be independent of each other. This may be difficult to determine from looking at the data and we may have to rely on the assumptions provided by the data collector. Also, we can see from the residual plot that the data points do not appear to be dependent on one another.  
+Since the Linearity, Homoscedacity, Normality, and Independence conditions are satisfied, we can conclude that the assumptions for Linear Regression are met.  
+<br>
+Clearly, the second model that involves a transformation is better. This goes to tell us that sometimes even if the data does not appear to satisfy the assumptions of linear regression, with some transformations, we may be able to get a transformed data that will satisfy the criteria for linear regression and still make using linear regression possible on the dataset.  
+
+<br>
+<center><h3>Question 3</h3></center>
+Using the results from 3, forecast life expectancy when TotExp^.06 = 1.5. Then forecast life
+expectancy when TotExp^.06 = 2.5  
+<br>
+Based on the results of the model with the transformed data above, the linear relationship is given by:  
+$LifeExp2 = -736527910 + 620060216*TotExp2$  
+Using the equation above, we can forcast the values for life expectancy for the given TotExp.  
+<b>When TotExp^.06 = 1.5</b>  
+```{r}
+TotExp2 = 1.5
+LifeExp2 = -736527910 + 620060216*TotExp2
+LifeExp = LifeExp2 ^ (1/4.6) # We have to transform back to get the actual LifeExp
+LifeExp
+```
+
+Therefore, for TotExp^.06 = 1.5, the LifeExp will be about 63.3 after transforming back to the original units.  
+<br>
+<b>When TotExp^.06 = 2.5</b>  
+```{r}
+TotExp2 = 2.5
+LifeExp2 = -736527910 + 620060216*TotExp2
+LifeExp = LifeExp2 ^ (1/4.6) # We have to transform back to get the actual LifeExp
+LifeExp
+```
+
+Therefore, for TotExp^.06 = 2.5, the LifeExp will be about 86.5 after transforming back to the original units.  
+<br>
+<center><h3>Question 4</h3></center>
+Build the following multiple regression model and interpret the F Statistics, R^2, standard error,
+and p-values. How good is the model?
+LifeExp = b0+b1 x PropMd + b2 x TotExp +b3 x PropMD x TotExp 
+<br>  
+<b> Scatter Plot - Q4</b>
+```{r 4-scatter-plot}
+p4 = ggplot(who_raw, aes(x=(TotExp + PropMD + (PropMD * TotExp)), y=LifeExp2)) + geom_point() + theme_minimal() +
+    theme(panel.grid.major = element_line(colour = "lemonchiffon3"),
+    panel.grid.minor = element_line(colour = "lemonchiffon3"),
+    axis.title = element_text(size = 13),
+    axis.text = element_text(size = 11),
+    axis.text.x = element_text(family = "sans",
+        size = 11), axis.text.y = element_text(family = "sans",
+        size = 11), plot.title = element_text(size = 15,
+        hjust = 0.5), panel.background = element_rect(fill = "gray85"),
+    plot.background = element_rect(fill = "antiquewhite")) +labs(title = "LifeExp - Multi Regression",
+    x = "TotExp + PropMD + (PropMD * TotExp)", y = "LifeExp")
+p4
+```
+
+<br>
+<b> Simple Linear Regression - Q4 </b>  
+```{r 4-simple-linear-regression}
+lm_who4 <- lm(LifeExp ~ TotExp + PropMD + (PropMD * TotExp), data = who_raw)
+summary(lm_who4)
+```
+
+<b> Residual vs Fitted - Q4</b>
+```{r 4-residual-fitted}
+plot(fitted(lm_who4),resid(lm_who4), main="Residuals vs Fitted - Q4", xlab = "Fitted", ylab = "Residuals")
+abline(0, 0)
+```
+
+<br>
+<b>Q-Q Plot</b>
+```{r 4-qq-plot}
+qqnorm(resid(lm_who2))
+qqline(resid(lm_who2))
+```
+<br>  
+<b> Interpret the F statistics, R^2, standard error,and p-values only:</b>  
+F statistic: 34.49 on 3 and 186 DF  
+p-value < 2.2e-16 - The p-value being less than 0.05 means that the result is statistically significant.
+R-squared:  0.3574 - This means that the model only accounts for about 35.74% of variability in the data.  
+Residual standard error: The TotExp can deviate from the regression line by approximately 8.765 on 186 degrees of freedom 
+<br>
+There are four (4) main assumptions for Linear Regression and they are:  
+<li>Linearity: </li> The relationship between X and Y must be linear. As can be seen from the scatter plot above, `LifeExp vs TotExp + PropMD + (PropMD * TotExp)` does not have a linear relationship and this condition is not satisfied.  
+<li>Homoscedacity: </li> There should be constant variance in the residuals. From the Residual vs Fitted Plot shown above, it does not appear that there is a constant variance and thus the homoscedacity criterion is not satisfied.  
+<li>Normality: </li>The data should be normally distributed. From the QQ plot shown above, the data does not follow a normal distribution.  
+<li>Independence: </li> The observations should be independent of each other. This may be difficult to determine from looking at the data and we may have to rely on the assumptions provided by the data collector.  
+Since the Linearity, Homoscedacity, and Normality conditions are not satisfied, we can conclude that the assumptions for Linear Regression are not met.  
+<br>
+
+Comparing the results of the three models, the second model is still the best and the third model is by no means better at all. Although the third model is slightly better than the first model without any transformation, it still falls far short when compared to the second model. This still tells us that even if the data can be transformed to produce better results, not all transformations will make sense and will produce better models.  
+
+
+<center><h3>Question 5</h3></center>
+Forecast LifeExp when PropMD=.03 and TotExp = 14. Does this forecast seem realistic? Why
+or why not?
+<br>  
+Based on the results of the model with the transformed data above, the linear relationship is given by:  
+$LifeExp = 6.277e+01 +  1.497e+03 * PropMd + 7.233e-05 * TotExp - 6.026e-03 * PropMD * TotExp$
+Using the equation above, we can forcast the values for life expectancy for the given TotExp.  
+<b>When TotExp^.06 = 1.5</b>  
+```{r}
+PropMD = 0.03
+TotExp = 14
+LifeExp5 = 6.277 * 10^(1) +  (1.497 * 10^(3) * PropMD) + (7.233 * 10^(-5) * TotExp) - (6.026 * 10^(-3) * PropMD * TotExp)
+LifeExp5
+```
+
+From the data provided, the max LifeExp is about 83, and the mean LifeExp is about 67. Hence, a value of 107 for LifeExp is not realistic based on the given data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
