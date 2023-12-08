@@ -70,7 +70,8 @@ $\frac{\partial^2}{\partial x \partial y}f(x, y) = -12y $. This is the mmixed pa
 
 Then find $D(x,y) = f_{xx} f_{yy} - f^2_{xy} = 0 - (-12y)^2 = -144y^2$. This will always result in D < 0 for any value of y.  
 
-According to the second derivative test, any critical point will be a saddle point since $D(x, y)<0\  \forall \ (x, y)\  \epsilon \ R $. 
+According to the second derivative test, any critical point will be a saddle point since  
+$D(x, y)<0\  \forall \ (x, y)\  \epsilon \ R$. 
 <br>  
 
 <center><h3>Problem 3</h3></center>
