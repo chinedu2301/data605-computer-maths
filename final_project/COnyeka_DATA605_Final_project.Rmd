@@ -1,0 +1,129 @@
+---
+title: "CUNY SPS DATA 605 Final Project"
+author: "Chinedu Onyeka"
+date: "2023-12-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<center><h3>Problem 1</h3></center>  
+
+Using R, set a random seed equal to 1234 (i.e., set.seed(1234)).  Generate a random variable X that has 10,000 continuous random uniform values between 5 and 15.Then generate a random variable Y that has 10,000 random normal values with a mean of 10 and a standard deviation of 2.89.  
+
+Probability:   Calculate as a minimum the below probabilities a through c.  Assume the small letter "x" is estimated as the median of the X variable, and the small letter "y" is estimated as the median of the Y variable.  Interpret the meaning of all probabilities.  
+
+<p> Probabilities: a. P(X>x | X>y);  b.  P(X>x & Y>y);  	c.  P(X<x | X>y) </p>
+<p> Investigate whether P(X>x & Y>y)=P(X>x)P(Y>y) by building a table and evaluating the marginal and joint probabilities. </p>
+<p> Check to see if independence holds by using Fisher’s Exact Test and the Chi Square Test.  What is the difference between the two? Which is most appropriate?  Are you surprised at the results?  Why or why not? </p>  
+
+<h3>Solution 1 </h3>  
+```{r}
+# Set the seed
+set.seed(1234)
+
+# Generate random variable X with 10,000 continuous random uniform values between 5 and 15
+X <- runif(10000, min = 5, max = 15)
+
+# Generate random variable Y with 10,000 random normal values with mean 10 and standard deviation 2.89
+Y <- rnorm(10000, mean = 10, sd = 2.89)
+
+# Calculate median values for X and Y
+x_median <- median(X)
+y_median <- median(Y)
+```
+
+**Part A**  
+P(X > x | X > y)
+```{r}
+# a. P(X > x | X > y)
+prob_a <- mean(X > x_median & X > Y)
+
+# Display the probabilities
+prob_a
+```
+P(X > x & Y > y)
+```{r}
+# b. P(X > x & Y > y)
+prob_b <- mean(X > x_median & Y > y_median)
+
+# Display the probabilities
+prob_b
+```
+
+P(X < x | X > y)
+```{r}
+# c. P(X < x | X > y)
+prob_c <- mean(X < x_median & X > Y)
+
+# Display the probabilities
+prob_c
+```
+**Part B**  
+Investigate whether P(X>x & Y>y)=P(X>x)P(Y>y)
+```{r}
+# Calculate joint probabilities
+joint_prob <- mean(X > x_median & Y > y_median)
+
+# Calculate marginal probabilities
+marginal_prob_X <- mean(X > x_median)
+marginal_prob_Y <- mean(Y > y_median)
+
+# Display the joint and product of marginal probabilities
+joint_prob
+marginal_prob_X * marginal_prob_Y
+
+```
+
+We see that the joint probability is equal the product of marginal probabilities: P(X>x & Y>y)=P(X>x)P(Y>y)  
+
+**Part C**  
+Check to see if independence holds by using Fisher’s Exact Test and the Chi Square Test.
+```{r}
+# Create a contingency table
+cont_table <- table(X > x_median, Y > y_median)
+
+# Perform Fisher’s Exact Test
+fisher_test <- fisher.test(cont_table)
+
+# Perform Chi-Square Test
+chi_square_test <- chisq.test(cont_table)
+
+# Display the results of both tests
+fisher_test
+chi_square_test
+```
+
+If the results from the tests indicate a low p-value (typically less than 0.05), it suggests dependence between X and Y, while a higher p-value suggests independence. in this case, the p-value for both Fisher's Test and Chi-Square are about the same (0.7949) which is greater than 0.05 indicating independence. Therefore, Independence exists.  
+
+Fisher’s Exact Test is used for contingency tables with small sample sizes, providing exact probabilities while Chi-Square Test is more suitable for larger samples, relying on approximations. I am not surprised by the results considering the fact that the data is fairly large (10,000).  
+
+<br>
+<center><h3>Problem 2</h3></center>
+You are to register for Kaggle.com (free) and compete in the Regression with a Crab Age Dataset competition.  https://www.kaggle.com/competitions/playground-series-s3e16  I want you to do the following.
+
+<p> *Descriptive and Inferential Statistics.* Provide univariate descriptive statistics and appropriate plots for the training data set.  Provide a scatterplot matrix for at least two of the independent variables and the dependent variable. Derive a correlation matrix for any three quantitative variables in the dataset.  Test the hypotheses that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.  Discuss the meaning of your analysis.  Would you be worried about familywise error? Why or why not? </p>  
+
+<p> *Linear Algebra and Correlation.*  Invert your correlation matrix from above. (This is known as the precision matrix and contains variance inflation factors on the diagonal.) Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix. Conduct LDU decomposition on the matrix. </p>  
+
+<p> *Calculus-Based Probability & Statistics.*  Many times, it makes sense to fit a closed form distribution to data.  Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.  Then load the MASS package and run fitdistr to fit an exponential probability density function.  (See  https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/fitdistr.html ).  Find the optimal value of $\lambda$ for this distribution, and then take 1000 samples from this exponential distribution using this value (e.g., rexp(1000, $\lambda$)).  Plot a histogram and compare it with a histogram of your original variable.   Using the exponential pdf, find the 5th and 95th percentiles using the cumulative distribution function (CDF).   Also generate a 95% confidence interval from the empirical data, assuming normality.  Finally, provide the empirical 5th percentile and 95th percentile of the data.  Discuss. </p>  
+
+<p>  *Modeling.*  Build some type of multiple regression  model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com user name and score. </p>  
+
+<h3>Solution 2</h3>  
+
+
+<h4> *Descriptive and Inferential Statistics.* </h4>
+
+<h4> *Linear Algebra and Correlation.* </h4>
+
+<h4> *Calculus-Based Probability & Statistics.* </h4>
+
+<h4> *Modeling.* </h4>
+
+
+
+
+
