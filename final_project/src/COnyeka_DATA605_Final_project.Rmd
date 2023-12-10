@@ -2,7 +2,19 @@
 title: "CUNY SPS DATA 605 Final Project"
 author: "Chinedu Onyeka"
 date: "2023-12-11"
-output: html_document
+output:
+  html_document:
+    includes:
+      in_header: header.html
+    css: ./lab.css
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+  pdf_document: default
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
 ---
 
 ```{r setup, include=FALSE}
@@ -19,7 +31,7 @@ Probability:   Calculate as a minimum the below probabilities a through c.  Assu
 <p> Investigate whether P(X>x & Y>y)=P(X>x)P(Y>y) by building a table and evaluating the marginal and joint probabilities. </p>
 <p> Check to see if independence holds by using Fisher’s Exact Test and the Chi Square Test.  What is the difference between the two? Which is most appropriate?  Are you surprised at the results?  Why or why not? </p>  
 
-<h3>Solution 1 </h3>  
+<h4>Solution 1 </h4>  
 ```{r}
 # Set the seed
 set.seed(1234)
@@ -101,7 +113,9 @@ If the results from the tests indicate a low p-value (typically less than 0.05),
 Fisher’s Exact Test is used for contingency tables with small sample sizes, providing exact probabilities while Chi-Square Test is more suitable for larger samples, relying on approximations. I am not surprised by the results considering the fact that the data is fairly large (10,000).  
 
 <br>
+
 <center><h3>Problem 2</h3></center>
+
 You are to register for Kaggle.com (free) and compete in the Regression with a Crab Age Dataset competition.  https://www.kaggle.com/competitions/playground-series-s3e16  I want you to do the following.
 
 <p> *Descriptive and Inferential Statistics.* Provide univariate descriptive statistics and appropriate plots for the training data set.  Provide a scatterplot matrix for at least two of the independent variables and the dependent variable. Derive a correlation matrix for any three quantitative variables in the dataset.  Test the hypotheses that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.  Discuss the meaning of your analysis.  Would you be worried about familywise error? Why or why not? </p>  
@@ -112,16 +126,465 @@ You are to register for Kaggle.com (free) and compete in the Regression with a C
 
 <p>  *Modeling.*  Build some type of multiple regression  model and submit your model to the competition board.  Provide your complete model summary and results with analysis.  Report your Kaggle.com user name and score. </p>  
 
-<h3>Solution 2</h3>  
+<h4>Solution 2</h4>  
+Load Libraries  
+```{r load-libs, warning=FALSE, message=FALSE}
+library(Amelia)
+library(caret)
+library(caTools)
+library(cowplot)
+library(e1071)
+library(fastDummies)
+library(grid)
+library(kableExtra)
+library(MASS)
+library(matrixcalc)
+library(Metrics)
+library(nnet)
+library(OpenImageR)
+library(reshape2)
+library(tidyverse)
+```
+
+Read the train dataset  
+```{r read-train-data, warning=FALSE, message=FALSE}
+url_crab_age = "https://raw.githubusercontent.com/chinedu2301/data605-computer-maths/main/final_project/data/crab_age_dataset.csv"
+crab_age_train_raw = read_csv(url_crab_age)
+crab_age_train_raw = crab_age_train_raw %>% rename(
+    Shucked_Weight = `Shucked Weight`,
+    Viscera_Weight = `Viscera Weight`,
+    Shell_Weight = `Shell Weight`
+    )
+```
+
+Display the data  
+```{r display-few-records, warning=FALSE}
+# display a few records of the raw data
+crab_age_raw_data_few_records <- kable(head(crab_age_train_raw, 50), "html") %>%
+                                 kable_paper("hover", full_width = F) %>%
+                                 scroll_box(width = "850px", height = "350px")
+crab_age_raw_data_few_records
+```
 
 
-<h4> *Descriptive and Inferential Statistics.* </h4>
+  
+  
+<center><h4> *Descriptive and Inferential Statistics.* </h4></center>
+**Univariate Descriptive Statistics**  
+```{r summary, warning=FALSE}
+summary(crab_age_train_raw)
+```
 
-<h4> *Linear Algebra and Correlation.* </h4>
+**Scatter Plots**
+```{r scatter-plots, warning=FALSE}
+# Age vs Sex
+scatter_age_sex = crab_age_train_raw %>% ggplot(aes(x = Sex, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Sex", x = "Sex", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
 
-<h4> *Calculus-Based Probability & Statistics.* </h4>
+# Age vs Length
+scatter_age_length = crab_age_train_raw %>% ggplot(aes(x = Length, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Length", x = "Length", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))  
 
-<h4> *Modeling.* </h4>
+# Age vs Diameter
+scatter_age_diameter = crab_age_train_raw %>% ggplot(aes(x = Diameter, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Diameter", x = "Diameter", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite")) 
+
+# Age vs Height
+scatter_age_height = crab_age_train_raw %>% ggplot(aes(x = Height, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Height", x = "Height", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+
+# Age vs Weight
+scatter_age_weight = crab_age_train_raw %>% ggplot(aes(x = Weight, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Weight", x = "Weight", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+
+# Age vs Shucked_Weight
+scatter_age_shucked_weight = crab_age_train_raw %>% ggplot(aes(x = Shucked_Weight, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Shucked_Weight", x = "Shucked_Weight", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+
+# Age vs Shucked_Weight
+scatter_age_viscera_weight = crab_age_train_raw %>% ggplot(aes(x = Viscera_Weight, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Viscera_Weight", x = "Viscera_Weight", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+
+# Age vs Shucked_Weight
+scatter_age_shell_weight = crab_age_train_raw %>% ggplot(aes(x = Shell_Weight, y = Age)) + geom_point(aes(color = Sex)) +
+                               labs(title = "Crab Age vs Shell_Weight", x = "Shell_Weight", y = "Crab Age", fill = "Sex") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+
+
+# Plot grid of all plots
+crab_age_scatter_plot1 <- plot_grid(scatter_age_sex, scatter_age_length, scatter_age_diameter, scatter_age_height,
+                                   byrow = TRUE, nrow = 2) 
+
+crab_age_scatter_plot2 <- plot_grid(scatter_age_weight, scatter_age_shucked_weight, scatter_age_viscera_weight, scatter_age_shell_weight,
+                                   byrow = TRUE, nrow = 2) 
+#display all plots
+crab_age_scatter_plot1
+
+crab_age_scatter_plot2 # For Age vs Weights
+```
+
+**Correlation Matrix**  
+Derive a correlation matrix for any three quantitative variables in the dataset.  
+```{r correlation-matrix, warning=FALSE}
+#using the Diameter, Length, and Weight
+correlation_data = crab_age_train_raw[, c("Diameter", "Length", "Weight")]
+correlation_matrix = round(cor(correlation_data), 2)
+
+# display the correlation matrix
+correlation_matrix
+```
+Test the hypotheses that the correlations between each pairwise set of variables is 0 and provide an 80% confidence interval.  
+```{r pairwise-corr-dia-len, warning=FALSE}
+# Find the pariwise correlation between Diameter and Length using a confidence interval of 80%
+pairwise_corr_dia_len = cor.test(correlation_data$Diameter, correlation_data$Length, conf.level = 0.8)
+pairwise_corr_dia_len
+```
+```{r pairwise-corr-dia-weight, warning=FALSE}
+# Find the pariwise correlation between Diameter and Weight using a confidence interval of 80%
+pairwise_corr_dia_weight = cor.test(correlation_data$Diameter, correlation_data$Weight, conf.level = 0.8)
+pairwise_corr_dia_weight
+```
+```{r pairwise-corr-len-weight, warning=FALSE}
+# Find the pariwise correlation between Length and Weight using a confidence interval of 80%
+pairwise_corr_len_weight = cor.test(correlation_data$Length, correlation_data$Weight, conf.level = 0.8)
+pairwise_corr_len_weight
+```
+
+*From the correlation test results for all three cases above, we see that the p-value is very small (almost zero). Hence, we reject the Null Hypothesis that the true correlation is 0. Hence, the true correlation is NOT zero(0) for any of the three pairs of variables - Diameter, Length, and Weight.*  
+
+**Familywise Error**  
+The family-wise error rate (FWER) is the probability of at least 1 false positive when multiple comparisons are being tested. Basically, FWER is the probability of a coming to at least one false conclusion in a series of hypothesis tests. In other words, it’s the probability of making at least one Type I Error.  
+Using the Bonferroni correction which adjusts the level of significance for a family of tests as adjusted $\alpha$ = $\frac{\alpha}{n}$ where n is the number of tests.  
+In this case, with 3 correlation tests:  
+
+Alpha level for each individual test = 1 - 80% = 0.20
+Number of tests = 3  
+
+Adjusted alpha level for multiple tests = 0.20 / 3 ≈ 0.067  
+Therefore, using the Bonferroni correction, the adjusted significance level for each individual correlation test to control the familywise error rate at an overall 80% confidence level is approximately 0.067 or 6.7%. Based on this result, I will not be worried about familywise error.
+
+
+<center><h4> *Linear Algebra and Correlation.* </h4></center>  
+Invert your 3 x 3 correlation matrix from above. (This is known as the precision matrix and contains variance inflation factors on the diagonal.) Multiply the correlation matrix by the precision matrix, and then multiply the precision matrix by the correlation matrix. Conduct LU decomposition on the matrix.  
+
+**Invert Correlation Matrix**  
+Using the `solve` function to invert the correlation matrix.
+```{r precision-matrix}
+precision_matrix <- solve(correlation_matrix)
+precision_matrix
+```
+
+**Multiply correlation_matrix by the precision_matrix**
+```{r multiply-corr-precision-matrix, warning=FALSE}
+# multiply correlation matrix by precision matrix
+mul_corr_matrix_precision = round(correlation_matrix %*% precision_matrix, 2)
+mul_corr_matrix_precision
+```
+This shows that a matrix multiplied by its inverse gives us the identity matrix.  
+
+
+**Multiply the precision_matrix by the correlation_matrix**
+```{r multiply-precision-corr-matrix, warning=FALSE}
+# multiply precision matrix by correlation matrix
+mul_precision_by_corr_matrix = round(precision_matrix %*% correlation_matrix, 2)
+mul_precision_by_corr_matrix
+```
+This also shows that the inverse of a matrix multiplied by the matrix is still the identity matrix.  
+
+Essentially, this proves the theorem that if A is a square matrix and $A^{-1}$ exists, then $AA^{-1}=A^{-1}A = I$ where $I$ is the Identity matrix. This holds only for square matrices and their inverses.  
+
+
+**Conduct LU decomposition on the matrix**
+```{r lu-decomposition, warning=FALSE}
+lu_decomposition = lu.decomposition(correlation_matrix)
+lu_decomposition
+```
+
+<center> <h4> *Calculus-Based Probability & Statistics.* </h4> </center>
+Many times, it makes sense to fit a closed form distribution to data.  Select a variable in the Kaggle.com training dataset that is skewed to the right, shift it so that the minimum value is absolutely above zero if necessary.  
+
+**Find Skewness**  
+Using the `skewness` function in `e1071` package, we compute the skewness of the variables.  
+Note:  
+Positive skewness (>0): Indicates right-skewed distribution (tail is longer on the right).  
+Negative skewness (<0): Indicates left-skewed distribution (tail is longer on the left).  
+Skewness around 0: Indicates approximately symmetric distribution.  
+```{r skewness, warning=FALSE}
+# Get skewness for each column
+for (col in colnames(crab_age_train_raw)) {
+  if (!(col %in% c("Sex", "id"))){
+    skew_val <- skewness(crab_age_train_raw[[col]]) 
+    cat(sprintf("The skewness for the %s variable is: %.2f\n", col, round(skew_val, 2)))
+  }
+}
+```
+Therefore, we select the Weight variable since it is one of the right-skewed variables.  
+*Check the minimum value of Weight*
+```{r}
+# check the minimum value:
+min(crab_age_train_raw$Weight)
+```
+Since the minimum value of Weight is not negative, no need for adjustment.
+
+
+*Histogram to check distribution of Weight*
+```{r plot-weight-hist}
+#hist(crab_age_train_raw$Weight, breaks = 20, xlab = 'Weight', main = "Histogram of Weight")
+hist_weight = crab_age_train_raw %>% ggplot(aes(x = Weight)) + 
+              geom_histogram(binwidth = 0.5, color = "black", fill = "skyblue", alpha = 0.7) +
+                               labs(title = "Histogram for Weight", x = "Weight", y = "Frequency") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+hist_weight
+```
+
+*Density Plot to visualize the distribution of Weight*
+```{r plot-weight-density}
+density_weight = crab_age_train_raw %>% ggplot(aes(x = Weight)) + geom_density() +
+                               labs(title = "Density Plot for Weight", x = "Weight", y = "Density") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+density_weight
+```
+
+From the Histogram and Density plot, we can see that the Weight variable is skewed to the right.  
+
+**load the MASS package and run fitdistr to fit an exponential probability density function**  
+```{r message=FALSE, warning=FALSE}
+prob_density_function <- fitdistr(crab_age_train_raw$Weight, densfun = 'exponential')
+lambda <- prob_density_function$estimate
+exponential_pdf <- rexp(1000, lambda)
+```
+
+**Optimal Value of λ: **  
+The optimal value of lambda = 1/λ.
+```{r optimal-val}
+optimal_value <- round((1/lambda), 4)
+optimal_value
+```
+
+**Plot a histogram and compare it with a histogram of your original variable**  
+Using ggplot2
+```{r compare-hist-ggplot2}
+# histogram for exponential distribution
+exp_pdf = exponential_pdf %>% tibble()
+colnames(exp_pdf) = "Weight"
+hist_exponential_pdf = exp_pdf %>% ggplot(aes(x = Weight)) + 
+                       geom_histogram(binwidth = 1, color = "black", fill = "skyblue", alpha = 0.7) +
+                               labs(title = "Histogram for Weight-Exponential PDF", x = "Weight", y = "Frequency") +
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))
+plot_grid(hist_weight, NULL, hist_exponential_pdf, nrow = 1, rel_widths = c(1, 0.008, 1))
+```
+
+Using Base R
+```{r compare-hist-base-R, warning=FALSE}
+par(mfrow=c(1,2))
+hist(crab_age_train_raw$Weight, breaks = 20, col="violet", main = "Histogram - Original", xlab = 'Weight')
+hist(exponential_pdf, breaks = 20, col="royalblue", main = "Histogram - Exponential PDF", xlab = 'Weight')
+```
+
+
+**The 5th and 95th percentiles using the CDF are:**  
+
+```{r cdf-5th-95th-percentiles}
+cdf_5th_95th_percentiles = round(quantile(exponential_pdf, c(0.05, 0.95)), 4)
+cdf_5th_95th_percentiles
+```
+
+**95% confidence interval from empirical data**
+```{r confidence-interval}
+confidence_interval = t.test(crab_age_train_raw$Weight)
+confidence_interval
+```
+**The 5th and 95th percentiles using the empirical data are:**  
+
+```{r}
+empirical_5th_95th_percentiles = round(quantile(crab_age_train_raw$Weight, c(0.05, 0.95)), 4)
+empirical_5th_95th_percentiles
+```
+
+Comparing the 5th and 95th percentiles of the exponential pdf and the empirical data as well as their histograms, we can clearly see the exponential pdf is much more skewed to the right than the original/empirical data. Also, the original empirical data appears to be better and the exponential data is not a good approximation of the original data in this case.
+
+
+<center><h4> *Modeling.* </h4><center>
+
+**Conduct Exploratory Data Analysis Prior to Modeling**  
+
+*glimpse of the data*  
+```{r glimpse-data, warning=FALSE}
+glimpse(crab_age_train_raw)
+```
+
+There are about 74,051 observations and 10 variables (9 predictor variables and 1 response variable). The response variable is the age and we aim to predict the age of the crab using the other features given. Only Sex is the categorical variable in the data.  
+
+*Check for missing Values*  
+```{r amelia-null-values, warning=FALSE}
+# use missmap function from the Amelia package to check for NA values
+missmap(crab_age_train_raw,
+        plot.background = element_rect(fill = "antiquewhite"),
+        main = "Crab Age Dataset - Missing Values", 
+        x.cex = 0.45,
+        y.cex = 0.6,
+        margins = c(7.1, 7.1),
+        col = c("yellow", "black"), legend = FALSE)
+```
+
+As can be seen from the missing values plot, there are no missing values.  
+
+*Histogram for Age to check the Age distribution*  
+```{r hist-age, warning=FALSE}
+hist_age = crab_age_train_raw %>% ggplot(aes(x = Age)) + 
+                                  geom_histogram(binwidth = 1, color = "black", fill = "skyblue", alpha = 0.7) +
+                                  labs(title = "Histogram for Age", x = "Age", y = "Frequency") +
+                                  theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                           panel.background = element_rect(fill = "gray80"),
+                                                           plot.background = element_rect(fill = "antiquewhite"))
+hist_age
+```
+From the Age distribution, we can see that ages of crabs given are between 3 and 20.  
+
+*Bar Plot for Sex*  
+```{r bar-plot, warning=FALSE}
+# group the data by sex and get count/percentage
+crab_sex_grouped <- crab_age_train_raw %>% group_by(Sex) %>% 
+                        summarise(count = n()) %>%
+                        mutate(percentage = round((count / sum(count) * 100), 2))
+
+# bar plot using ggplot2
+bar_plot_crab_sex <- crab_sex_grouped %>% ggplot(aes(x=factor(Sex), y = percentage, fill = factor(Sex))) +
+                               geom_bar(stat = "identity", position = "dodge") +
+                               labs(title = "Bar Chart - Crab Sex", x = "Crab Sex", y = "Percentage", 
+                                    fill = "Crab Sex") +
+                               scale_y_continuous(labels = scales::percent_format(scale = 1)) +  # Format y-axis as percentages
+                               theme_minimal()  + theme(plot.title = element_text(hjust = 0.5),
+                                                        panel.background = element_rect(fill = "gray80"),
+                                                        plot.background = element_rect(fill = "antiquewhite"))                          
+bar_plot_crab_sex
+```
+Each of the crab sex constitute a little above 30% of the data with the "M" category being a little more than 35% and representing the highest category by a small margin.  
+
+
+**Data Pre-Processing**
+Develop a function to pre-process the data and make it ready for training. This function can be easily used to pre-process any new test data to avoid code duplications and errors. 
+```{r data-preprocess-function, warning=FALSE}
+# data pre-processing
+data_preprocess_scaling <- function(df){
+                      # This function standardizes the numeric variables of the df using the standard normal method
+                      df <- as.data.frame(df)
+                      df_char <- df %>% select(Age, Sex) # Exclude Age from scaling as well.
+                      df_numeric <- df %>% select(-Sex, -Age)
+                      df_numeric_scaled <- df_numeric %>% mutate_all( ~ (scale(.) %>% as.vector))
+                      # combine the categorical and numeric features and drop the id column
+                      df_scaled_combined <- cbind(df_char, df_numeric_scaled) %>% select(-id)
+                      return(df_scaled_combined)
+}
+```
+
+Pre-process the train data  
+```{r data-pre-process}
+# pre-process the data using the function above
+crab_data_pre_processed = data_preprocess_scaling(crab_age_train_raw)
+
+# display some records for the standardized data
+kable(head(crab_data_pre_processed, 50), "html") %>%
+                                 kable_paper("hover", full_width = F) %>%
+                                 scroll_box(width = "850px", height = "350px")
+```
+
+**Train Test Split**
+
+Use the CaTools library to split the cleaned dataset into training and testing datasets in 70:30 ratio.
+```{r train-test-split}
+# Set a seed
+set.seed(1994)
+#Split the sample
+sampling <- sample.split(crab_data_pre_processed$Age, SplitRatio = 0.7) 
+# Training Data
+df_train_subset <- subset(crab_data_pre_processed, sampling == TRUE)
+# Testing Data
+df_test_subset <- subset(crab_data_pre_processed, sampling == FALSE)
+```
+
+
+**Train the model**  
+```{r train-regression-model}
+multiple_regression_model = lm(Age ~ ., data = df_train_subset)
+# display the model
+summary(multiple_regression_model)
+```
+**Predictions**  
+```{r predict-data, warning=FALSE}
+predictions_test = predict(multiple_regression_model, df_test_subset)
+```
+
+**Evaluate the Model**
+```{r evaluate-model, warning=FALSE}
+mean_absolute_error = Metrics::mae(df_test_subset$Age, predictions_test)
+mean_sq_error = Metrics::mse(df_test_subset$Age, predictions_test)
+root_mean_sq_error = Metrics::rmse(df_test_subset$Age, predictions_test)
+
+model_eval_metrics = c(mean_absolute_error, mean_sq_error, root_mean_sq_error) %>% t()
+column_names = c("Mean Absolute Error", "Mean Square Error", "Root Mean Square Error")
+evaluation_metrics = data.frame(values = model_eval_metrics)
+colnames(evaluation_metrics) = column_names
+
+# combine the results and display
+kable(evaluation_metrics, "html") %>%
+                        kable_paper("hover", full_width = F) %>%
+                        scroll_box(width = "450px", height = "100px")
+```
+
+From the MAE, and RMSE, we can see that the model is able to predict the Age of Crabs within 2 units of the Crab Age.  
+
+**Using the test data provided to make predictions**  
+Read test data from remote location
+```{r read-test-data, warning=FALSE, message=FALSE}
+url_crab_age_test = "https://raw.githubusercontent.com/chinedu2301/data605-computer-maths/main/final_project/data/crab_age_dataset.csv"
+crab_age_test_raw = read_csv(url_crab_age)
+crab_age_test_raw = crab_age_test_raw %>% rename(
+    Shucked_Weight = `Shucked Weight`,
+    Viscera_Weight = `Viscera Weight`,
+    Shell_Weight = `Shell Weight`
+    )
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
