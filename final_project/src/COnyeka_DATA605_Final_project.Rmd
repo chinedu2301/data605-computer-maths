@@ -498,8 +498,14 @@ Develop a function to pre-process the data and make it ready for training. This 
 data_preprocess_scaling <- function(df){
                       # This function standardizes the numeric variables of the df using the standard normal method
                       df <- as.data.frame(df)
-                      df_char <- df %>% select(Age, Sex) # Exclude Age from scaling as well.
-                      df_numeric <- df %>% select(-Sex, -Age)
+                      if ("Age" %in% colnames(df)){
+                          df_char <- df %>% select(Age, Sex) 
+                          df_numeric <- df %>% select(-Sex, -Age) # Exclude Age from scaling as well.
+                      } else {
+                          df_char <- df %>% select(Sex) 
+                          df_numeric <- df %>% select(-Sex) # Exclude Age from scaling as well.                        
+                      }
+                      # scale the other numeric values using standard scaler
                       df_numeric_scaled <- df_numeric %>% mutate_all( ~ (scale(.) %>% as.vector))
                       # combine the categorical and numeric features and drop the id column
                       df_scaled_combined <- cbind(df_char, df_numeric_scaled) %>% select(-id)
@@ -541,14 +547,14 @@ summary(multiple_regression_model)
 ```
 **Predictions**  
 ```{r predict-data, warning=FALSE}
-predictions_test = predict(multiple_regression_model, df_test_subset)
+predictions_test = round(predict(multiple_regression_model, df_test_subset), 0) # round predictions to nearest age
 ```
 
 **Evaluate the Model**
 ```{r evaluate-model, warning=FALSE}
-mean_absolute_error = Metrics::mae(df_test_subset$Age, predictions_test)
-mean_sq_error = Metrics::mse(df_test_subset$Age, predictions_test)
-root_mean_sq_error = Metrics::rmse(df_test_subset$Age, predictions_test)
+mean_absolute_error = round(Metrics::mae(df_test_subset$Age, predictions_test), 2)
+mean_sq_error = round(Metrics::mse(df_test_subset$Age, predictions_test), 2)
+root_mean_sq_error = round(Metrics::rmse(df_test_subset$Age, predictions_test), 2)
 
 model_eval_metrics = c(mean_absolute_error, mean_sq_error, root_mean_sq_error) %>% t()
 column_names = c("Mean Absolute Error", "Mean Square Error", "Root Mean Square Error")
@@ -566,14 +572,64 @@ From the MAE, and RMSE, we can see that the model is able to predict the Age of 
 **Using the test data provided to make predictions**  
 Read test data from remote location
 ```{r read-test-data, warning=FALSE, message=FALSE}
-url_crab_age_test = "https://raw.githubusercontent.com/chinedu2301/data605-computer-maths/main/final_project/data/crab_age_dataset.csv"
-crab_age_test_raw = read_csv(url_crab_age)
+url_crab_age_test = "https://raw.githubusercontent.com/chinedu2301/data605-computer-maths/main/final_project/data/crab_age_test_data.csv"
+crab_age_test_raw = read_csv(url_crab_age_test)
 crab_age_test_raw = crab_age_test_raw %>% rename(
     Shucked_Weight = `Shucked Weight`,
     Viscera_Weight = `Viscera Weight`,
     Shell_Weight = `Shell Weight`
     )
 ```
+
+Display a few records of the test data:  
+```{r display-few-records-test, warning=FALSE}
+kable(head(crab_age_test_raw, 100), "html") %>%
+                                 kable_paper("hover", full_width = F) %>%
+                                 scroll_box(width = "850px", height = "350px")
+```
+
+Pre-Process the test data
+```{r crab-test-pre-process}
+# pre-process the data using the function above
+crab_test_data_pre_processed = data_preprocess_scaling(crab_age_test_raw)
+```
+
+Predictions
+```{r predict-data, warning=FALSE}
+predictions_test_data = round(predict(multiple_regression_model, crab_test_data_pre_processed), 0)
+```
+
+**Package the predictions results** 
+Convert the predictions results to dataframe and join back to the Ids from the test data and get the data ready for export.  
+```{r test-data-predictions-dataframe, warning=FALSE}
+# convert the predictions data to dataframe
+crab_age_predictions = predictions_test_data %>% as.vector() %>% data.frame()
+crab_age_predictions$id = crab_age_test_raw$id
+# switch the id column to come first
+crab_age_predictions[,c(1,2)] = crab_age_predictions[,c(2,1)]
+colnames(crab_age_predictions) = c("id", "Age")
+# set missing predictions to 0 if any
+crab_age_predictions[is.na(crab_age_predictions)] = 0
+
+# display the final predictions data
+kable(head(crab_age_predictions, 100), "html") %>%
+                                 kable_paper("hover", full_width = F) %>%
+                                 scroll_box(width = "850px", height = "350px")
+```
+
+**Write the Predictions data to local storage for submission**
+
+```{r write-predictions, warning=FALSE}
+write.csv(crab_age_predictions,'crab_age_predictions.csv', row.names=FALSE)
+```
+
+
+**Kaggle Submission**  
+kaggle username: Chinedu Onyeka
+kaggle score: 
+
+
+
 
 
 
