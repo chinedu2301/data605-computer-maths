@@ -1,7 +1,7 @@
 ---
 title: "CUNY SPS DATA 605 Final Project"
 author: "Chinedu Onyeka"
-date: "2023-12-11"
+date: "2023-12-10"
 output:
   html_document:
     includes:
@@ -273,7 +273,7 @@ pairwise_corr_len_weight = cor.test(correlation_data$Length, correlation_data$We
 pairwise_corr_len_weight
 ```
 
-*From the correlation test results for all three cases above, we see that the p-value is very small (almost zero). Hence, we reject the Null Hypothesis that the true correlation is 0. Hence, the true correlation is NOT zero(0) for any of the three pairs of variables - Diameter, Length, and Weight.*  
+From the correlation test results for all three cases above, we see that the p-value is very small (almost zero). Hence, we reject the Null Hypothesis that the true correlation is 0. Hence, the true correlation is NOT zero(0) for any of the three pairs of variables - Diameter, Length, and Weight.  
 
 **Familywise Error**  
 The family-wise error rate (FWER) is the probability of at least 1 false positive when multiple comparisons are being tested. Basically, FWER is the probability of a coming to at least one false conclusion in a series of hypothesis tests. In other words, it’s the probability of making at least one Type I Error.  
@@ -374,7 +374,7 @@ density_weight
 
 From the Histogram and Density plot, we can see that the Weight variable is skewed to the right.  
 
-**load the MASS package and run fitdistr to fit an exponential probability density function**  
+**Load the MASS package and run fitdistr to fit an exponential probability density function**  
 ```{r message=FALSE, warning=FALSE}
 prob_density_function <- fitdistr(crab_age_train_raw$Weight, densfun = 'exponential')
 lambda <- prob_density_function$estimate
@@ -433,7 +433,7 @@ empirical_5th_95th_percentiles
 Comparing the 5th and 95th percentiles of the exponential pdf and the empirical data as well as their histograms, we can clearly see the exponential pdf is much more skewed to the right than the original/empirical data. Also, the original empirical data appears to be better and the exponential data is not a good approximation of the original data in this case.
 
 
-<center><h4> *Modeling.* </h4><center>
+<center><h4> *Modeling.* </h4></center>
 
 **Conduct Exploratory Data Analysis Prior to Modeling**  
 
@@ -468,6 +468,7 @@ hist_age = crab_age_train_raw %>% ggplot(aes(x = Age)) +
                                                            plot.background = element_rect(fill = "antiquewhite"))
 hist_age
 ```
+
 From the Age distribution, we can see that ages of crabs given are between 3 and 20.  
 
 *Bar Plot for Sex*  
@@ -488,10 +489,11 @@ bar_plot_crab_sex <- crab_sex_grouped %>% ggplot(aes(x=factor(Sex), y = percenta
                                                         plot.background = element_rect(fill = "antiquewhite"))                          
 bar_plot_crab_sex
 ```
+
 Each of the crab sex constitute a little above 30% of the data with the "M" category being a little more than 35% and representing the highest category by a small margin.  
 
 
-**Data Pre-Processing**
+**Data Pre-Processing**  
 Develop a function to pre-process the data and make it ready for training. This function can be easily used to pre-process any new test data to avoid code duplications and errors. 
 ```{r data-preprocess-function, warning=FALSE}
 # data pre-processing
@@ -513,6 +515,7 @@ data_preprocess_scaling <- function(df){
 }
 ```
 
+
 Pre-process the train data  
 ```{r data-pre-process}
 # pre-process the data using the function above
@@ -523,6 +526,9 @@ kable(head(crab_data_pre_processed, 50), "html") %>%
                                  kable_paper("hover", full_width = F) %>%
                                  scroll_box(width = "850px", height = "350px")
 ```
+
+
+
 
 **Train Test Split**
 
@@ -539,16 +545,19 @@ df_test_subset <- subset(crab_data_pre_processed, sampling == FALSE)
 ```
 
 
+
 **Train the model**  
 ```{r train-regression-model}
 multiple_regression_model = lm(Age ~ ., data = df_train_subset)
 # display the model
 summary(multiple_regression_model)
 ```
+
 **Predictions**  
 ```{r predict-data, warning=FALSE}
 predictions_test = round(predict(multiple_regression_model, df_test_subset), 0) # round predictions to nearest age
 ```
+
 
 **Evaluate the Model**
 ```{r evaluate-model, warning=FALSE}
@@ -567,6 +576,8 @@ kable(evaluation_metrics, "html") %>%
                         scroll_box(width = "450px", height = "100px")
 ```
 
+
+
 From the MAE, and RMSE, we can see that the model is able to predict the Age of Crabs within 2 units of the Crab Age.  
 
 **Using the test data provided to make predictions**  
@@ -581,6 +592,7 @@ crab_age_test_raw = crab_age_test_raw %>% rename(
     )
 ```
 
+
 Display a few records of the test data:  
 ```{r display-few-records-test, warning=FALSE}
 kable(head(crab_age_test_raw, 100), "html") %>%
@@ -588,23 +600,26 @@ kable(head(crab_age_test_raw, 100), "html") %>%
                                  scroll_box(width = "850px", height = "350px")
 ```
 
+
 Pre-Process the test data
 ```{r crab-test-pre-process}
 # pre-process the data using the function above
 crab_test_data_pre_processed = data_preprocess_scaling(crab_age_test_raw)
 ```
 
+
 Predictions
-```{r predict-data, warning=FALSE}
+```{r predict-data-test, warning=FALSE}
 predictions_test_data = round(predict(multiple_regression_model, crab_test_data_pre_processed), 0)
 ```
 
-**Package the predictions results** 
+
+**Package the predictions results**  
 Convert the predictions results to dataframe and join back to the Ids from the test data and get the data ready for export.  
 ```{r test-data-predictions-dataframe, warning=FALSE}
 # convert the predictions data to dataframe
 crab_age_predictions = predictions_test_data %>% as.vector() %>% data.frame()
-crab_age_predictions$id = crab_age_test_raw$id
+crab_age_predictions$id = as.integer(crab_age_test_raw$id)
 # switch the id column to come first
 crab_age_predictions[,c(1,2)] = crab_age_predictions[,c(2,1)]
 colnames(crab_age_predictions) = c("id", "Age")
@@ -617,32 +632,22 @@ kable(head(crab_age_predictions, 100), "html") %>%
                                  scroll_box(width = "850px", height = "350px")
 ```
 
+
+
+
 **Write the Predictions data to local storage for submission**
 
 ```{r write-predictions, warning=FALSE}
-write.csv(crab_age_predictions,'crab_age_predictions.csv', row.names=FALSE)
+write.csv(crab_age_predictions, "../data/crab_age_predictions.csv", row.names=FALSE)
 ```
 
 
+
 **Kaggle Submission**  
-kaggle username: Chinedu Onyeka
-kaggle score: 
+kaggle username: Chinedu Onyeka  
+kaggle score: 1.46  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+See screenshot below:  
+<center>
+<img src = "https://github.com/chinedu2301/data605-computer-maths/blob/main/final_project/data/crab_age_predictions_kaggle_screenshot.png?raw=true" />
+</center>
